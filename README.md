@@ -4,6 +4,11 @@ Create interactive thematic maps and geovisualizations.
 * <http://unfoldingmaps.org/>
 * <https://github.com/tillnagel/unfolding>
 
+> **About this fork**
+> This fork ([enkatsu/unfolding](https://github.com/enkatsu/unfolding)) builds Unfolding as a library for
+> **Processing 4** (Java 17). The library code is the same as the original project; only the build and
+> release process has changed. It requires Processing 4.0 or later and does not work with Processing 3.
+
 ## About
 ### Interaction Events
 Unfolding enables you to rapidly create interactive maps. Basic interactions
@@ -22,12 +27,52 @@ such as OpenStreetMap or TileMill.
 
 
 ## Download
-Get Unfolding from <http://unfoldingmaps.org/> or directly from here: http://unfoldingmaps.org/downloads
+### Processing 4
+Download the latest release from <https://github.com/enkatsu/unfolding/releases>, then either
+
+* drag and drop `Unfolding.pdex` onto the Processing editor, or
+* unzip `Unfolding.zip` into the `libraries` folder of your sketchbook
+  (e.g. `~/Documents/Processing/libraries/Unfolding`).
+
+Restart Processing. The examples are listed under *Contributed Libraries* in *File > Examples*.
+
+### Processing 3 and earlier
+Get the original Unfolding from <http://unfoldingmaps.org/> or directly from here: http://unfoldingmaps.org/downloads
+
+
+## Known Issues
+Several map tile services used by Unfolding have changed since the original release:
+
+* The default provider (`OpenStreetMap.PositronMapProvider`, served by CARTO) now shows "API KEY REQUIRED" on every tile.
+* Stamen tiles (`StamenMapProvider`) are no longer available, and OpenStreetMap's tile servers block Unfolding's requests.
+* `EsriProvider` and `Microsoft` tiles still load. Use one of them for now, e.g.
+  `new UnfoldingMap(this, new EsriProvider.WorldGrayCanvas())` or `new UnfoldingMap(this, new Microsoft.RoadProvider())`.
+
+`MBTilesApp` additionally needs the SQLite JDBC driver in the sketch's `code` folder (see `code/how-to-install-sqlite.txt`).
+
+
+## Building from Source
+Requires JDK 17. The Gradle wrapper downloads Gradle automatically.
+
+```sh
+./gradlew buildReleaseArtifacts        # creates release/Unfolding.zip, .pdex and .txt
+./gradlew deployToProcessingSketchbook # installs the library into your Processing sketchbook
+```
+
+`deployToProcessingSketchbook` replaces any existing `libraries/Unfolding` folder in your sketchbook.
+
+### Releasing
+1. Update `version` (an integer that must increase with each release) and `prettyVersion` in `release.properties`.
+2. Push a tag `v<prettyVersion>`, e.g. `git tag v0.9.93 && git push origin v0.9.93`.
+
+GitHub Actions then builds the library and attaches `Unfolding.zip`, `Unfolding.pdex` and `Unfolding.txt` to a GitHub release.
 
 
 ## Credit
 Developed at Interaction Design Lab, FH Potsdam, the HCI group, KU Leuven, and MIT Senseable City Labs.
 See http://unfoldingmaps.org/contact.html for the full credits.
+
+Processing 4 build and release by [Katsuya Endoh](https://enkatsu.org/).
 
 
 ## License

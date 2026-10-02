@@ -7,3 +7,9 @@ doc/
 data/splendor-big.png
 src/de/fhpotsdam/unfolding/mapdisplay/GLGraphicsMapDisplayTransparentTest.java
 /bin/
+
+# Gradle
+.gradle/
+release/
+# generated from release.properties by ./gradlew writeLibraryProperties
+/library.properties

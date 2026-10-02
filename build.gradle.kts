@@ -89,6 +89,43 @@ sourceSets {
             include("ui/**", "shader/**")
         }
     }
+    // Java examples (not part of the release; the release ships examples-processing/ instead)
+    create("examples") {
+        java {
+            setSrcDirs(listOf("examples", "examples-extern"))
+        }
+        resources {
+            setSrcDirs(listOf("config"))
+        }
+        compileClasspath += main.get().output
+        runtimeClasspath += main.get().output
+    }
+    // tests and test apps; some of them use classes from the Java examples
+    test {
+        java {
+            setSrcDirs(listOf("test"))
+        }
+        resources {
+            setSrcDirs(listOf("config"))
+        }
+        compileClasspath += getByName("examples").output
+        runtimeClasspath += getByName("examples").output
+    }
+}
+
+val examplesImplementation by configurations.getting {
+    extendsFrom(configurations.implementation.get())
+}
+val examplesRuntimeOnly by configurations.getting
+
+// JOGL native libraries, needed to run examples with the P2D/P3D renderers.
+// They are extracted by the task extractJoglNatives, as JOGL cannot load them from Gradle's dependency cache.
+val joglNatives by configurations.creating
+val joglNativesClassifier = when {
+    currentOS.isMacOsX -> "natives-macosx-universal"
+    currentOS.isWindows -> "natives-windows-amd64"
+    System.getProperty("os.arch") == "aarch64" -> "natives-linux-aarch64"
+    else -> "natives-linux-amd64"
 }
 
 // Repositories where dependencies will be fetched from.
@@ -110,6 +147,43 @@ dependencies {
 
     // only needed to compile TuioCursorHandler; users of TUIO interactions provide it themselves
     compileOnly(files("lib/libTUIO.jar"))
+
+    // Java examples
+    examplesImplementation(group = "org.processing", name = "core", version = "4.3.1")
+    examplesImplementation(files("lib/libTUIO.jar"))
+    // third-party libraries used by examples-extern/
+    examplesImplementation(fileTree("lib-extern") { include("*.jar") })
+    joglNatives(group = "org.jogamp.gluegen", name = "gluegen-rt", version = "2.5.0", classifier = joglNativesClassifier)
+    joglNatives(group = "org.jogamp.jogl", name = "jogl-all", version = "2.5.0", classifier = joglNativesClassifier)
+    // for MBTilesMapProvider
+    examplesRuntimeOnly(group = "org.xerial", name = "sqlite-jdbc", version = "3.53.4.0")
+
+    // tests
+    testImplementation(group = "org.processing", name = "core", version = "4.3.1")
+    testImplementation(files("lib/libTUIO.jar"))
+    testImplementation(group = "junit", name = "junit", version = "4.13.2")
+    testRuntimeOnly(group = "org.xerial", name = "sqlite-jdbc", version = "3.53.4.0")
+}
+
+val joglNativesDirectory = layout.buildDirectory.dir("natives")
+
+val extractJoglNatives by tasks.registering(Sync::class) {
+    from(joglNatives.elements.map { jars -> jars.map { zipTree(it) } }) {
+        include("natives/**")
+        eachFile { path = path.substringAfterLast("/") }
+        includeEmptyDirs = false
+    }
+    into(joglNativesDirectory)
+}
+
+// Runs a Java example, e.g. ./gradlew runExample -Pexample=de.fhpotsdam.unfolding.examples.SimpleMapApp
+tasks.register<JavaExec>("runExample") {
+    group = "application"
+    description = "Runs the Java example given by -Pexample=<fully qualified class name>"
+    dependsOn(extractJoglNatives)
+    classpath = sourceSets["examples"].runtimeClasspath
+    mainClass.set(providers.gradleProperty("example"))
+    systemProperty("java.library.path", joglNativesDirectory.get().asFile.absolutePath)
 }
 
 tasks.withType<JavaCompile>().configureEach {

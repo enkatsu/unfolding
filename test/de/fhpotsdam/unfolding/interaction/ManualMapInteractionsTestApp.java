@@ -162,7 +162,7 @@ public class ManualMapInteractionsTestApp extends PApplet {
 	}
 
 	public void mousePressed() {
-		if (mouseEvent.getClickCount() == 2) {
+		if (mouseEvent.getCount() == 2) {
 			map.zoomAndPanTo(1, mouseX, mouseY);
 		}
 	}

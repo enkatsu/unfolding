@@ -1,5 +1,6 @@
 package de.fhpotsdam.unfolding.interactions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -89,22 +90,37 @@ public class MouseHandler extends MapEventBroadcaster {
 		}
 	}
 
-	public void mouseDragged() {
+	/** Maps hit when the mouse was pressed. Only these are panned when dragging. */
+	private List<UnfoldingMap> pressedMaps = new ArrayList<UnfoldingMap>();
+
+	public void mousePressed(int x, int y) {
+		pressedMaps.clear();
 		for (UnfoldingMap map : maps) {
-			if (map.isHit(mouseX, mouseY)) {
-				if (mouseButton == PConstants.LEFT) {
-					// log.debug("mouse: fire panTo for " + map.getId());
+			if (map.isHit(x, y)) {
+				pressedMaps.add(map);
+			}
+		}
+	}
 
-					// Pan between two locations, so other listening maps can pan correctly
+	public void mouseReleased() {
+		pressedMaps.clear();
+	}
 
-					Location oldLocation = map.getLocation(pmouseX, pmouseY);
-					Location newLocation = map.getLocation(mouseX, mouseY);
+	public void mouseDragged() {
+		// Pans the maps the drag started on, even if the mouse is now over another map
+		for (UnfoldingMap map : pressedMaps) {
+			if (mouseButton == PConstants.LEFT) {
+				// log.debug("mouse: fire panTo for " + map.getId());
 
-					PanMapEvent panMapEvent = new PanMapEvent(this, map.getId(), PanMapEvent.PAN_BY);
-					panMapEvent.setFromLocation(oldLocation);
-					panMapEvent.setToLocation(newLocation);
-					eventDispatcher.fireMapEvent(panMapEvent);
-				}
+				// Pan between two locations, so other listening maps can pan correctly
+
+				Location oldLocation = map.getLocation(pmouseX, pmouseY);
+				Location newLocation = map.getLocation(mouseX, mouseY);
+
+				PanMapEvent panMapEvent = new PanMapEvent(this, map.getId(), PanMapEvent.PAN_BY);
+				panMapEvent.setFromLocation(oldLocation);
+				panMapEvent.setToLocation(newLocation);
+				eventDispatcher.fireMapEvent(panMapEvent);
 			}
 		}
 	}
@@ -145,6 +161,12 @@ public class MouseHandler extends MapEventBroadcaster {
 		}
 
 		switch (action) {
+		case MouseEvent.PRESS:
+			mousePressed(event.getX(), event.getY());
+			break;
+		case MouseEvent.RELEASE:
+			mouseReleased();
+			break;
 		case MouseEvent.CLICK:
 			mouseClicked();
 			break;

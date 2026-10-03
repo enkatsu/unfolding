@@ -11,7 +11,7 @@ import de.fhpotsdam.unfolding.events.PanMapEvent;
 import de.fhpotsdam.unfolding.events.ZoomMapEvent;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.interactions.MouseHandler;
-import de.fhpotsdam.unfolding.providers.StamenMapProvider;
+import de.fhpotsdam.unfolding.providers.EsriProvider;
 
 /**
  * Tests the generalization / simplification method to reduce polylines on a map.
@@ -33,7 +33,7 @@ public class GeneralizationTestOnMapApp extends PApplet {
 	public void setup() {
 		size(800, 600, OPENGL);
 
-		map = new UnfoldingMap(this, new StamenMapProvider.Toner());
+		map = new UnfoldingMap(this, new EsriProvider.WorldGrayCanvas());
 		// MapUtils.createDefaultEventDispatcher(this, map);
 
 		EventDispatcher eventDispatcher = new EventDispatcher();

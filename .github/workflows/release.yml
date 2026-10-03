@@ -2,8 +2,9 @@
 # Based on https://github.com/processing/processing-library-template
 #
 # To release:
-#   1. Update version (int, must increase) and prettyVersion in release.properties, and commit.
-#   2. Push a tag "v<prettyVersion>", e.g. "git tag v0.9.93 && git push origin v0.9.93".
+#   1. Update version (int, must increase) and prettyVersion in release.properties,
+#      and VERSION in src/de/fhpotsdam/unfolding/UnfoldingMap.java, and commit.
+#   2. Push a tag "v<prettyVersion>", e.g. "git tag v0.9.94 && git push origin v0.9.94".
 name: Release
 
 on:
@@ -29,11 +30,16 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Check tag matches prettyVersion
+      - name: Check tag matches prettyVersion and UnfoldingMap.VERSION
         run: |
           pretty_version=$(sed -n 's/^prettyVersion *= *//p' release.properties)
           if [ "v${pretty_version}" != "${GITHUB_REF_NAME}" ]; then
             echo "::error::Tag ${GITHUB_REF_NAME} does not match prettyVersion ${pretty_version} in release.properties"
+            exit 1
+          fi
+          map_version=$(sed -n 's/.*String VERSION = "\(.*\)";.*/\1/p' src/de/fhpotsdam/unfolding/UnfoldingMap.java)
+          if [ "${map_version}" != "${pretty_version}" ]; then
+            echo "::error::UnfoldingMap.VERSION ${map_version} does not match prettyVersion ${pretty_version} in release.properties"
             exit 1
           fi
 

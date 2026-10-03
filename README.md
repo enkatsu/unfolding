@@ -84,8 +84,9 @@ The Java examples in `examples/` and `examples-extern/` can be run with Gradle, 
 ```
 
 ### Releasing
-1. Update `version` (an integer that must increase with each release) and `prettyVersion` in `release.properties`.
-2. Push a tag `v<prettyVersion>`, e.g. `git tag v0.9.93 && git push origin v0.9.93`.
+1. Update `version` (an integer that must increase with each release) and `prettyVersion` in `release.properties`,
+   and `VERSION` in `src/de/fhpotsdam/unfolding/UnfoldingMap.java` to the same `prettyVersion`.
+2. Push a tag `v<prettyVersion>`, e.g. `git tag v0.9.94 && git push origin v0.9.94`.
 
 GitHub Actions then builds the library and attaches `Unfolding.zip`, `Unfolding.pdex` and `Unfolding.txt` to a GitHub release.
 

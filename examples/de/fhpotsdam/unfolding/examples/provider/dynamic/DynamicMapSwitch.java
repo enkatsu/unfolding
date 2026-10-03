@@ -2,7 +2,7 @@ package de.fhpotsdam.unfolding.examples.provider.dynamic;
 
 import processing.core.PApplet;
 import de.fhpotsdam.unfolding.UnfoldingMap;
-import de.fhpotsdam.unfolding.providers.Google;
+import de.fhpotsdam.unfolding.providers.EsriProvider;
 import de.fhpotsdam.unfolding.providers.Microsoft;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 
@@ -28,7 +28,7 @@ public class DynamicMapSwitch extends PApplet {
 	}
 
 	public void setup() {
-		map1 = new UnfoldingMap(this, new Google.GoogleMapProvider());
+		map1 = new UnfoldingMap(this, new EsriProvider.WorldStreetMap());
 		map2 = new UnfoldingMap(this, new Microsoft.AerialProvider());
 		map3 = new UnfoldingMap(this);
 

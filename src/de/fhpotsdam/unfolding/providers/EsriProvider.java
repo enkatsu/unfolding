@@ -76,6 +76,12 @@ public class EsriProvider {
 			String url = "http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/" + getZoomString(coordinate) + ".jpg";
 			return new String[] { url };
 		}
+
+		// Higher zoom levels only show "Map data not yet available"
+		@Override
+		public int maxZoomLevel() {
+			return 13;
+		}
 	}
 	
 	public static class WorldPhysical extends GenericEsriProvider {

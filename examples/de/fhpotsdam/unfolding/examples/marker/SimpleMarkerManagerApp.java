@@ -5,7 +5,7 @@ import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.SimpleLinesMarker;
 import de.fhpotsdam.unfolding.marker.SimplePointMarker;
-import de.fhpotsdam.unfolding.providers.Google;
+import de.fhpotsdam.unfolding.providers.EsriProvider;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 
 /**
@@ -30,7 +30,7 @@ public class SimpleMarkerManagerApp extends PApplet {
 
 	public void setup() {
 
-		map = new UnfoldingMap(this, new Google.GoogleMapProvider());
+		map = new UnfoldingMap(this, new EsriProvider.WorldStreetMap());
 
 		map.zoomToLevel(3);
 		map.panTo(new Location(40f, -42f));

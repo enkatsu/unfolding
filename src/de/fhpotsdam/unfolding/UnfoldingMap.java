@@ -17,6 +17,7 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MarkerManager;
 import de.fhpotsdam.unfolding.providers.AbstractMapProvider;
 import de.fhpotsdam.unfolding.utils.GeoUtils;
+import de.fhpotsdam.unfolding.utils.LogUtils;
 import de.fhpotsdam.unfolding.utils.ScreenPosition;
 import de.fhpotsdam.utils.Integrator;
 import processing.core.PApplet;
@@ -74,6 +75,11 @@ public class UnfoldingMap implements MapEventListener {
 	protected Location restrictedRectangularPanningBottomRightLocation = null;
 
 	public static Logger log = Logger.getLogger(UnfoldingMap.class);
+
+	static {
+		// Prevents log4j warnings in Processing sketches, which have no log4j configuration
+		LogUtils.configureIfUnconfigured();
+	}
 
 	/** Whether Unfolding lib showed a greeting message, i.e. the library version. */
 	private static boolean greetingMessageDisplayed = false;

@@ -32,11 +32,15 @@ public class OpenStreetMap {
 
 	public static class OpenStreetMapProvider extends GenericOpenStreetMapProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://tile.openstreetmap.org/" + getZoomString(coordinate) + ".png";
+			String url = "https://tile.openstreetmap.org/" + getZoomString(coordinate) + ".png";
 			return new String[] { url };
 		}
 	}
 
+	/**
+	 * @deprecated The toolserver.org tile server is no longer available.
+	 */
+	@Deprecated
 	public static class OSMGrayProvider extends GenericOpenStreetMapProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String url = "http://a.www.toolserver.org/tiles/bw-mapnik/" + getZoomString(coordinate) + ".png";
@@ -45,15 +49,29 @@ public class OpenStreetMap {
 	}
 	
 	public static class PositronMapProvider extends GenericOpenStreetMapProvider {
+		public PositronMapProvider() {
+		}
+
+		public PositronMapProvider(String apiKey) {
+			setApiKey(apiKey);
+		}
+
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://a.basemaps.cartocdn.com/light_all/" + getZoomString(coordinate) + ".png";
+			String url = withApiKey("https://basemaps.cartocdn.com/light_all/" + getZoomString(coordinate) + ".png", "key");
 			return new String[] { url };
 		}
 	}
 	
 	public static class DarkMatterMapProvider extends GenericOpenStreetMapProvider {
+		public DarkMatterMapProvider() {
+		}
+
+		public DarkMatterMapProvider(String apiKey) {
+			setApiKey(apiKey);
+		}
+
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://a.basemaps.cartocdn.com/dark_all/" + getZoomString(coordinate) + ".png";
+			String url = withApiKey("https://basemaps.cartocdn.com/dark_all/" + getZoomString(coordinate) + ".png", "key");
 			return new String[] { url };
 		}
 	}

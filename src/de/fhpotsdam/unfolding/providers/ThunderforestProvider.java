@@ -33,29 +33,57 @@ public class ThunderforestProvider {
 	}
 
 	public static class OpenCycleMap extends GenericThunderforestProvider {
+		public OpenCycleMap() {
+		}
+
+		public OpenCycleMap(String apiKey) {
+			setApiKey(apiKey);
+		}
+
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://tile.thunderforest.com/cycle/" + getZoomString(coordinate) + ".png";
+			String url = withApiKey("https://tile.thunderforest.com/cycle/" + getZoomString(coordinate) + ".png", "apikey");
 			return new String[] { url };
 		}
 	}
 
 	public static class Transport extends GenericThunderforestProvider {
+		public Transport() {
+		}
+
+		public Transport(String apiKey) {
+			setApiKey(apiKey);
+		}
+
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://tile.thunderforest.com/transport/" + getZoomString(coordinate) + ".png";
+			String url = withApiKey("https://tile.thunderforest.com/transport/" + getZoomString(coordinate) + ".png", "apikey");
 			return new String[] { url };
 		}
 	}
 	
 	public static class Landscape extends GenericThunderforestProvider {
+		public Landscape() {
+		}
+
+		public Landscape(String apiKey) {
+			setApiKey(apiKey);
+		}
+
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://tile.thunderforest.com/landscape/" + getZoomString(coordinate) + ".png";
+			String url = withApiKey("https://tile.thunderforest.com/landscape/" + getZoomString(coordinate) + ".png", "apikey");
 			return new String[] { url };
 		}
 	}
 	
 	public static class Outdoors extends GenericThunderforestProvider {
+		public Outdoors() {
+		}
+
+		public Outdoors(String apiKey) {
+			setApiKey(apiKey);
+		}
+
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://tile.thunderforest.com/outdoors/" + getZoomString(coordinate) + ".png";
+			String url = withApiKey("https://tile.thunderforest.com/outdoors/" + getZoomString(coordinate) + ".png", "apikey");
 			return new String[] { url };
 		}
 	}

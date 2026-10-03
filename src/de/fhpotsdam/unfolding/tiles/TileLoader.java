@@ -1,8 +1,17 @@
 package de.fhpotsdam.unfolding.tiles;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import javax.imageio.ImageIO;
+
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
+import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.core.Coordinate;
 import de.fhpotsdam.unfolding.mapdisplay.AbstractMapDisplay;
 import de.fhpotsdam.unfolding.mapdisplay.Java2DMapDisplay;
@@ -30,6 +39,15 @@ public class TileLoader implements Runnable {
 	 * false.
 	 */
 	private static final boolean TRY_AGAIN_ON_NON_LOADED_TILES = false;
+
+	/**
+	 * User-Agent sent when loading tiles via HTTP(S). Some tile servers (e.g. OpenStreetMap) block requests without a
+	 * User-Agent identifying the application. Set this before creating maps to identify your own application.
+	 */
+	public static String userAgent = "Unfolding/" + UnfoldingMap.VERSION + " (+https://github.com/enkatsu/unfolding)";
+
+	private static final int MAX_REDIRECTS = 5;
+	private static final int TIMEOUT_MILLIS = 10000;
 
 	/** Shows coordinate information for tile, i.e. placed atop original tile image. */
 	public boolean showDebugBorder = SHOW_DEBUG_BORDER;
@@ -98,11 +116,9 @@ public class TileLoader implements Runnable {
 		PImage img = p.loadImage(path);
 
 		if (img == null) {
-			try {
-				img = p.loadImage(url);
+			img = loadImage(url);
+			if (img != null) {
 				img.save(path);
-			} catch (Exception e) {
-				PApplet.println("Error: Could not load Tile from " + url);
 			}
 		}
 
@@ -118,17 +134,12 @@ public class TileLoader implements Runnable {
 	 * @return The tile image.
 	 */
 	protected PImage getTileFromUrl(String[] urls) {
-		// Load image from URL (local file included)
-		// NB: Use 'unknown' as content-type to let loadImage decide
-
-		// FIXME: Hot-fix / Work-around for https://github.com/processing/processing/issues/3442
-		// PImage img = p.loadImage(urls[0], "png");
-		PImage img = p.loadImage(urls[0], "unknown");
+		PImage img = loadImage(urls[0]);
 
 		if (img != null) {
 			// If array contains multiple URLs, load all images and blend them together
 			for (int i = 1; i < urls.length; i++) {
-				PImage img2 = p.loadImage(urls[i], "unknown");
+				PImage img2 = loadImage(urls[i]);
 				if (img2 != null) {
 					img.blend(img2, 0, 0, img.width, img.height, 0, 0, img.width, img.height, PApplet.BLEND);
 				}
@@ -136,6 +147,68 @@ public class TileLoader implements Runnable {
 		}
 
 		return img;
+	}
+
+	/**
+	 * Loads an image from a URL or a local path.
+	 *
+	 * HTTP(S) URLs are loaded with {@link #userAgent}, and redirects are followed, including from HTTP to HTTPS. Other
+	 * paths are loaded with Processing's loadImage function.
+	 *
+	 * @param url
+	 *            The URL or local path to load the image from.
+	 * @return The image, or null if it could not be loaded.
+	 */
+	protected PImage loadImage(String url) {
+		if (!url.startsWith("http://") && !url.startsWith("https://")) {
+			// NB: Use 'unknown' as content-type to let loadImage decide
+			// FIXME: Hot-fix / Work-around for https://github.com/processing/processing/issues/3442
+			return p.loadImage(url, "unknown");
+		}
+
+		try {
+			URL currentUrl = new URL(url);
+			for (int redirects = 0; redirects <= MAX_REDIRECTS; redirects++) {
+				HttpURLConnection connection = (HttpURLConnection) currentUrl.openConnection();
+				connection.setRequestProperty("User-Agent", userAgent);
+				connection.setConnectTimeout(TIMEOUT_MILLIS);
+				connection.setReadTimeout(TIMEOUT_MILLIS);
+				// Followed manually, as HttpURLConnection does not follow redirects from HTTP to HTTPS
+				connection.setInstanceFollowRedirects(false);
+
+				int status = connection.getResponseCode();
+				if (status >= 300 && status < 400) {
+					String location = connection.getHeaderField("Location");
+					connection.disconnect();
+					if (location == null) {
+						break;
+					}
+					currentUrl = new URL(currentUrl, location);
+					continue;
+				}
+				if (status != HttpURLConnection.HTTP_OK) {
+					// Some servers return an error image (e.g. "Access blocked"), which must not be shown as tile
+					PApplet.println("Error: Could not load Tile from " + url + " (HTTP " + status + ")");
+					connection.disconnect();
+					return null;
+				}
+
+				try (InputStream input = connection.getInputStream()) {
+					BufferedImage bufferedImage = ImageIO.read(input);
+					if (bufferedImage == null) {
+						PApplet.println("Error: Could not decode Tile from " + url);
+						return null;
+					}
+					PImage img = new PImage(bufferedImage);
+					img.parent = p;
+					return img;
+				}
+			}
+			PApplet.println("Error: Too many redirects when loading Tile from " + url);
+		} catch (IOException e) {
+			PApplet.println("Error: Could not load Tile from " + url + " (" + e + ")");
+		}
+		return null;
 	}
 
 	public void showDebugBorder() {

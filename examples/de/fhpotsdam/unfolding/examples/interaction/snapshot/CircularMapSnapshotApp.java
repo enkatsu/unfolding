@@ -6,7 +6,7 @@ import java.util.List;
 import processing.core.PApplet;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
-import de.fhpotsdam.unfolding.providers.StamenMapProvider;
+import de.fhpotsdam.unfolding.providers.EsriProvider;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 
 /**
@@ -28,7 +28,7 @@ public class CircularMapSnapshotApp extends PApplet {
 	}
 
 	public void setup() {
-		map = new UnfoldingMap(this, 0, 0, 400, 400, new StamenMapProvider.WaterColor());
+		map = new UnfoldingMap(this, 0, 0, 400, 400, new EsriProvider.WorldTopoMap());
 		map.zoomAndPanTo(10, new Location(51.507222, -0.1275));
 
 		MapUtils.createDefaultEventDispatcher(this, map);

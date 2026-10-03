@@ -32,22 +32,43 @@ public class CartoDB {
 	}
 
 	public static class Positron extends GenericCartoDBProvider {
+		public Positron() {
+		}
+
+		public Positron(String apiKey) {
+			setApiKey(apiKey);
+		}
+
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://a.basemaps.cartocdn.com/light_all/" + getZoomString(coordinate) + ".png";
+			String url = withApiKey("https://basemaps.cartocdn.com/light_all/" + getZoomString(coordinate) + ".png", "key");
 			return new String[] { url };
 		}
 	}
 
 	public static class DarkMatter extends GenericCartoDBProvider {
+		public DarkMatter() {
+		}
+
+		public DarkMatter(String apiKey) {
+			setApiKey(apiKey);
+		}
+
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://a.basemaps.cartocdn.com/dark_all/" + getZoomString(coordinate) + ".png";
+			String url = withApiKey("https://basemaps.cartocdn.com/dark_all/" + getZoomString(coordinate) + ".png", "key");
 			return new String[] { url };
 		}
 	}
 
 	public static class DarkMatterNoLabels extends GenericCartoDBProvider {
+		public DarkMatterNoLabels() {
+		}
+
+		public DarkMatterNoLabels(String apiKey) {
+			setApiKey(apiKey);
+		}
+
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://a.basemaps.cartocdn.com/dark_nolabels/" + getZoomString(coordinate) + ".png";
+			String url = withApiKey("https://basemaps.cartocdn.com/dark_nolabels/" + getZoomString(coordinate) + ".png", "key");
 			return new String[] { url };
 		}
 	}

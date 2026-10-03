@@ -44,6 +44,16 @@ public abstract class AbstractMapProvider {
 	public abstract int tileWidth();
 
 	public abstract int tileHeight();
+
+	/**
+	 * Gets the maximum zoom level this provider has tiles for. Maps created with this provider restrict their zoom
+	 * range to this level.
+	 *
+	 * @return The maximum zoom level.
+	 */
+	public int maxZoomLevel() {
+		return 18;
+	}
 	
 
 	public Coordinate locationCoordinate(Location location) {

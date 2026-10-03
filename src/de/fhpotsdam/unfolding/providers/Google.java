@@ -8,9 +8,14 @@ import de.fhpotsdam.unfolding.geo.Transformation;
 /**
  * Google Maps, for informational purpose, only. See Google's Terms of Service for usage
  * conditions.
+ * 
+ * @deprecated These providers access Google's map tiles directly via unofficial URLs, which is not permitted by
+ *             Google's Terms of Service.
  */
+@Deprecated
 public class Google {
 	
+	@Deprecated
 	public static abstract class GoogleProvider extends AbstractMapTileUrlProvider {
 
 		public GoogleProvider() {
@@ -36,6 +41,7 @@ public class Google {
 	/**
 	 * Google Terrain Map.
 	 */
+	@Deprecated
 	public static class GoogleTerrainProvider extends GoogleProvider {
 		public GoogleTerrainProvider() {
 		}
@@ -50,6 +56,7 @@ public class Google {
 	/**
 	 * Standard Google Map. 
 	 */
+	@Deprecated
 	public static class GoogleMapProvider extends GoogleProvider {
 		public GoogleMapProvider() {
 		}
@@ -64,6 +71,7 @@ public class Google {
 	/**
 	 * Simplified Google Map. 
 	 */
+	@Deprecated
 	public static class GoogleSimplifiedProvider extends GoogleProvider {
 		public GoogleSimplifiedProvider() {
 		}
@@ -76,6 +84,7 @@ public class Google {
 		}
 	}
 
+	@Deprecated
 	public static class GoogleSimplified2Provider extends GoogleProvider {
 		public GoogleSimplified2Provider() {
 		}

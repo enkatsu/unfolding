@@ -46,6 +46,8 @@ public class MapProviderTest {
 				new CartoDB.Positron("KEY").getTileUrls(coordinate)[0]);
 		assertEquals("https://tile.thunderforest.com/cycle/3/4/2.png?apikey=KEY",
 				new ThunderforestProvider.OpenCycleMap("KEY").getTileUrls(coordinate)[0]);
+		assertEquals("https://tile.openweathermap.org/map/clouds/3/4/2.png?appid=KEY",
+				new OpenWeatherProvider.Clouds("KEY").getTileUrls(coordinate)[0]);
 		assertEquals("https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/256/3/4/2?access_token=KEY",
 				new MapBox.Light("KEY").getTileUrls(coordinate)[0]);
 		assertEquals("https://api.mapbox.com/styles/v1/user/style/tiles/256/3/4/2?access_token=KEY",

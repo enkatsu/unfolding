@@ -13,7 +13,7 @@ import de.fhpotsdam.unfolding.events.PanMapEvent;
 import de.fhpotsdam.unfolding.events.ZoomMapEvent;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.interactions.MouseHandler;
-import de.fhpotsdam.unfolding.providers.Google;
+import de.fhpotsdam.unfolding.providers.EsriProvider;
 import de.fhpotsdam.unfolding.providers.Microsoft;
 
 /**
@@ -37,11 +37,11 @@ public class MapComparisonApp extends PApplet {
 	UnfoldingMap mapOSMSmallOSMBlend;
 	UnfoldingMap mapOSMSmallSat;
 
-	UnfoldingMap mapGoogle;
-	UnfoldingMap mapGoogleSmall;
-	UnfoldingMap mapGoogleSmallSatBlend;
-	UnfoldingMap mapGoogleSmallGoogleBlend;
-	UnfoldingMap mapGoogleSmallSat;
+	UnfoldingMap mapEsri;
+	UnfoldingMap mapEsriSmall;
+	UnfoldingMap mapEsriSmallSatBlend;
+	UnfoldingMap mapEsriSmallEsriBlend;
+	UnfoldingMap mapEsriSmallSat;
 
 	public void settings() {
 		size(1230, 700, P2D);
@@ -70,23 +70,23 @@ public class MapComparisonApp extends PApplet {
 		mapOSMSmallSat = new UnfoldingMap(this, "mapOSMSmallSat", 960, 10, 260, 335, true, false,
 				new Microsoft.AerialProvider());
 
-		// Google -----------------------------------------
-		mapGoogle = new UnfoldingMap(this, "maoGoogle", 10, 355, 400, 335, true, false, new Google.GoogleMapProvider());
+		// Esri -------------------------------------------
+		mapEsri = new UnfoldingMap(this, "mapEsri", 10, 355, 400, 335, true, false, new EsriProvider.WorldStreetMap());
 
-		// Google to Satellite
-		mapGoogleSmall = new UnfoldingMap(this, "mapGoogleSmall", 420, 355, 260, 335, true, false,
-				new Google.GoogleMapProvider());
+		// Esri to Satellite
+		mapEsriSmall = new UnfoldingMap(this, "mapEsriSmall", 420, 355, 260, 335, true, false,
+				new EsriProvider.WorldStreetMap());
 
-		mapGoogleSmallSatBlend = new UnfoldingMap(this, "mapGoogleSmallSatBlend", 690, 355, 260, 335, true, false,
+		mapEsriSmallSatBlend = new UnfoldingMap(this, "mapEsriSmallSatBlend", 690, 355, 260, 335, true, false,
 				new Microsoft.AerialProvider());
-		mapGoogleSmallGoogleBlend = new UnfoldingMap(this, "mapGoogleSmallGoogleBlend", 690, 355, 260, 335, true,
-				false, new Google.GoogleMapProvider());
+		mapEsriSmallEsriBlend = new UnfoldingMap(this, "mapEsriSmallEsriBlend", 690, 355, 260, 335, true,
+				false, new EsriProvider.WorldStreetMap());
 
-		mapGoogleSmallSat = new UnfoldingMap(this, "mapGoogleSmallSat", 960, 355, 260, 335, true, false,
+		mapEsriSmallSat = new UnfoldingMap(this, "mapEsriSmallSat", 960, 355, 260, 335, true, false,
 				new Microsoft.AerialProvider());
 
-		// First OSM and first google map are broadcasters
-		MouseHandler mouseHandler = new MouseHandler(this, mapOSM, mapGoogle);
+		// First OSM and first Esri map are broadcasters
+		MouseHandler mouseHandler = new MouseHandler(this, mapOSM, mapEsri);
 		eventDispatcher.addBroadcaster(mouseHandler);
 
 		// All maps listen to events from both broadcasters
@@ -96,13 +96,13 @@ public class MapComparisonApp extends PApplet {
 		maps.add(mapOSMSmallOSMBlend);
 		maps.add(mapOSMSmallSatBlend);
 		maps.add(mapOSMSmallSat);
-		maps.add(mapGoogle);
-		maps.add(mapGoogleSmall);
-		maps.add(mapGoogleSmallGoogleBlend);
-		maps.add(mapGoogleSmallSatBlend);
-		maps.add(mapGoogleSmallSat);
-		eventDispatcher.register(maps, "pan", mapOSM.getId(), mapGoogle.getId());
-		eventDispatcher.register(maps, "zoom", mapOSM.getId(), mapGoogle.getId());
+		maps.add(mapEsri);
+		maps.add(mapEsriSmall);
+		maps.add(mapEsriSmallEsriBlend);
+		maps.add(mapEsriSmallSatBlend);
+		maps.add(mapEsriSmallSat);
+		eventDispatcher.register(maps, "pan", mapOSM.getId(), mapEsri.getId());
+		eventDispatcher.register(maps, "zoom", mapOSM.getId(), mapEsri.getId());
 
 		zoomAndPanTo(location);
 	}
@@ -112,7 +112,7 @@ public class MapComparisonApp extends PApplet {
 
 		tint(255, 255);
 		mapOSM.draw();
-		mapGoogle.draw();
+		mapEsri.draw();
 
 		mapOSMSmall.draw();
 		mapOSMSmallSatBlend.draw();
@@ -121,12 +121,12 @@ public class MapComparisonApp extends PApplet {
 		tint(255, 255);
 		mapOSMSmallSat.draw();
 
-		mapGoogleSmall.draw();
-		mapGoogleSmallSatBlend.draw();
+		mapEsriSmall.draw();
+		mapEsriSmallSatBlend.draw();
 		tint(255, 170);
-		mapGoogleSmallGoogleBlend.draw();
+		mapEsriSmallEsriBlend.draw();
 		tint(255, 255);
-		mapGoogleSmallSat.draw();
+		mapEsriSmallSat.draw();
 	}
 
 	public void zoomAndPanTo(Location location) {

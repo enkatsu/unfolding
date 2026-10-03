@@ -4,7 +4,7 @@ import processing.core.PApplet;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.mapdisplay.MapDisplayFactory;
 import de.fhpotsdam.unfolding.providers.AbstractMapProvider;
-import de.fhpotsdam.unfolding.providers.Google;
+import de.fhpotsdam.unfolding.providers.EsriProvider;
 import de.fhpotsdam.unfolding.providers.Microsoft;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 
@@ -27,7 +27,7 @@ public class DynamicProviderSwitch extends PApplet {
 	}
 
 	public void setup() {
-		provider1 = new Google.GoogleMapProvider();
+		provider1 = new EsriProvider.WorldStreetMap();
 		provider2 = new Microsoft.AerialProvider();
 		provider3 = MapDisplayFactory.getDefaultProvider();
 

@@ -53,6 +53,7 @@ Several map tile services used by Unfolding have changed since the original rele
   | `StamenMapProvider.*` (now hosted by Stadia Maps) | [Stadia Maps](https://stadiamaps.com/) |
   | `ThunderforestProvider.*` | [Thunderforest](https://www.thunderforest.com/) |
   | `MapBox.Streets`, `MapBox.Light`, `MapBox.Dark`, `MapBox.Satellite`, etc., `MapBox.StyleProvider` (own styles) | [Mapbox](https://www.mapbox.com/) |
+  | `OpenWeatherProvider.*` (weather layers, e.g. to blend over a base map) | [OpenWeatherMap](https://openweathermap.org/) |
 
   ```java
   map = new UnfoldingMap(this, new StamenMapProvider.Toner("YOUR_API_KEY"));
@@ -64,8 +65,9 @@ Several map tile services used by Unfolding have changed since the original rele
 
 Providers whose tile servers no longer exist are marked as deprecated: `AcetateProvider`, `ImmoScout`,
 `MapQuestProvider`, `OpenMapSurferProvider`, `Yahoo`, `EsriProvider.DeLorme`, `MapBox.WorldLightProvider`,
-`MapBox.ControlRoomProvider`, `MapBox.LacquerProvider`, `OpenStreetMap.OSMGrayProvider`, and
-`OpenStreetMap.CloudmadeProvider`. `OpenWeatherProvider` requires an API key, which is not supported yet.
+`MapBox.ControlRoomProvider`, `MapBox.LacquerProvider`, `OpenStreetMap.OSMGrayProvider`,
+`OpenStreetMap.CloudmadeProvider`, and `OpenWeatherProvider.PressureContour`. `Google` is deprecated as well, as it
+accesses Google's map tiles via unofficial URLs, which Google's Terms of Service do not permit.
 
 `MBTilesApp` needs the SQLite JDBC driver in the sketch's `code` folder (see `code/how-to-install-sqlite.txt`).
 

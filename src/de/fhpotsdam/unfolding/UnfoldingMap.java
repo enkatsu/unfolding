@@ -688,10 +688,45 @@ public class UnfoldingMap implements MapEventListener {
 	 *            The Location to zoom around and pan to.
 	 */
 	public void zoomAndPanTo(int zoomLevel, Location location) {
-		ScreenPosition pos = mapDisplay.getScreenPosition(location);
+		// NB: Uses the exact (non-rounded) position, as any offset to the location is scaled up by zooming
+		ScreenPosition pos = mapDisplay.getScreenPositionFloat(location);
 		mapDisplay.setInnerTransformationCenter(new PVector(pos.x, pos.y));
 		zoomToLevel(zoomLevel);
-		panTo(location);
+		panToAfterZoom(location);
+	}
+
+	/**
+	 * Pans to the given Location after zooming. With tweening, the zoom is still animated, so the pan is calculated
+	 * for the zoomed map. (Calculating it for the current map would offset the location by any imprecision, scaled up
+	 * by zooming.)
+	 * 
+	 * @param location
+	 *            The Location to pan to.
+	 */
+	protected void panToAfterZoom(Location location) {
+		if (!tweening) {
+			panTo(location);
+			return;
+		}
+
+		// Temporarily sets the map to its target state, i.e. as it will be after tweening
+		float currentScale = mapDisplay.innerScale;
+		double currentOffsetX = mapDisplay.innerOffsetX;
+		double currentOffsetY = mapDisplay.innerOffsetY;
+		mapDisplay.innerScale = scaleIntegrator.target;
+		mapDisplay.innerOffsetX = txIntegrator.target;
+		mapDisplay.innerOffsetY = tyIntegrator.target;
+		mapDisplay.calculateInnerMatrix();
+
+		float[] innerXY = mapDisplay.getInnerObjectFromLocation(location);
+		float[] objectXY = mapDisplay.getObjectFromInnerObjectPosition(innerXY[0], innerXY[1]);
+
+		mapDisplay.innerScale = currentScale;
+		mapDisplay.innerOffsetX = currentOffsetX;
+		mapDisplay.innerOffsetY = currentOffsetY;
+		mapDisplay.calculateInnerMatrix();
+
+		panObjectPositionToObjectCenter(objectXY[0], objectXY[1]);
 	}
 
 	/**
@@ -892,10 +927,10 @@ public class UnfoldingMap implements MapEventListener {
 		Location[] boundingBox = GeoUtils.getBoundingBox(locations);
 		List<Location> boundingBoxLocations = Arrays.asList(boundingBox);
 		Location centerLocation = GeoUtils.getEuclideanCentroid(boundingBoxLocations);
-		ScreenPosition pos = mapDisplay.getScreenPosition(centerLocation);
+		ScreenPosition pos = mapDisplay.getScreenPositionFloat(centerLocation);
 		mapDisplay.setInnerTransformationCenter(new PVector(pos.x, pos.y));
 		zoomToFit(boundingBox);
-		panTo(centerLocation);
+		panToAfterZoom(centerLocation);
 	}
 
 	public void zoomToFit(List<Location> locations) {

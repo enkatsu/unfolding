@@ -35,6 +35,10 @@ public class Java2DMapDisplay extends AbstractMapDisplay implements PConstants {
 
 	/** The inner transformation matrix. Scales and rotates the map. */
 	protected PMatrix3D innerMatrix = new PMatrix3D();
+	/** Inner position which stays at the inner transformation center when scaling or rotating (see calculateInnerMatrix). */
+	private PVector originalCenter;
+	/** The inner transformation center originalCenter was calculated for. */
+	private PVector originalCenterFor;
 
 	/** The outer transformation matrix. Rotates the map pane. */
 	protected PMatrix3D matrix = new PMatrix3D();
@@ -136,18 +140,24 @@ public class Java2DMapDisplay extends AbstractMapDisplay implements PConstants {
 	public void calculateInnerMatrix() {
 		// Synchronize on this to not interfere with tile loading (see getVisibleKeys)
 		synchronized (this) {
-			PMatrix3D invMatrix = new PMatrix3D();
-			invMatrix.apply(innerMatrix);
-			invMatrix.invert();
+			// The original position stays at the transformation center when scaling or rotating. It only needs to be
+			// calculated when the center changes. (Calculating it on every update, e.g. on every frame while
+			// tweening, accumulates float imprecision, which zooming scales up to visible offsets.)
+			if (originalCenter == null || !innerTransformationCenter.equals(originalCenterFor)) {
+				PMatrix3D invMatrix = new PMatrix3D();
+				invMatrix.apply(innerMatrix);
+				invMatrix.invert();
 
-			float originalCenterX = invMatrix.multX(innerTransformationCenter.x, innerTransformationCenter.y);
-			float originalCenterY = invMatrix.multY(innerTransformationCenter.x, innerTransformationCenter.y);
+				originalCenter = new PVector(invMatrix.multX(innerTransformationCenter.x, innerTransformationCenter.y),
+						invMatrix.multY(innerTransformationCenter.x, innerTransformationCenter.y));
+				originalCenterFor = innerTransformationCenter.copy();
+			}
 
 			innerMatrix = new PMatrix3D();
 			innerMatrix.translate(innerTransformationCenter.x, innerTransformationCenter.y);
 			innerMatrix.scale(innerScale);
 			innerMatrix.rotateZ(innerAngle);
-			innerMatrix.translate(-originalCenterX, -originalCenterY);
+			innerMatrix.translate(-originalCenter.x, -originalCenter.y);
 		}
 	}
 

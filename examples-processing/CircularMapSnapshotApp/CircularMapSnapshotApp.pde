@@ -20,7 +20,7 @@ List<MapSnapshot> mapSnapshots = new ArrayList<MapSnapshot>();
 void setup() {
   size(600, 400, P2D);
 
-  map = new UnfoldingMap(this, 0, 0, 400, 400, new StamenMapProvider.WaterColor());
+  map = new UnfoldingMap(this, 0, 0, 400, 400, new EsriProvider.WorldTopoMap());
   map.zoomAndPanTo(new Location(51.507222, -0.1275), 10);
 
   MapUtils.createDefaultEventDispatcher(this, map);

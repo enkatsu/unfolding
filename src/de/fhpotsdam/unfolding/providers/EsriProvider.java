@@ -91,8 +91,14 @@ public class EsriProvider {
 	
 	public static class WorldGrayCanvas extends GenericEsriProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/" + getZoomString(coordinate) + ".jpg";
+			String url = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/" + getZoomString(coordinate) + ".jpg";
 			return new String[] { url };
+		}
+
+		// Higher zoom levels only show "Map data not yet available"
+		@Override
+		public int maxZoomLevel() {
+			return 16;
 		}
 	}
 }

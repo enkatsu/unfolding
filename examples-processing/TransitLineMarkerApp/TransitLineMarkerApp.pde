@@ -20,10 +20,10 @@ void setup() {
   size(800, 600, OPENGL);
   smooth();
 
-  map = new UnfoldingMap(this, new StamenMapProvider.TonerBackground());
+  map = new UnfoldingMap(this, new EsriProvider.WorldGrayCanvas());
   map.zoomToLevel(11);
   map.panTo(bostonLocation);
-  map.setZoomRange(9, 17); // prevent zooming too far out
+  map.setZoomRange(9, 16); // prevent zooming too far out
   map.setPanningRestriction(bostonLocation, 50);
   MapUtils.createDefaultEventDispatcher(this, map);
 

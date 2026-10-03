@@ -10,9 +10,9 @@ import de.fhpotsdam.unfolding.*;
 import de.fhpotsdam.unfolding.geo.*;
 import de.fhpotsdam.unfolding.utils.*;
 
-String bikeAPIUrl = "http://api.bike-stats.co.uk/service/rest/bikestats?format=csv";
-//String bikeFile = "bikestats.csv"; // in case URL goes down
-String bikeDataFile = bikeAPIUrl;
+// Snapshot of the former bike-stats.co.uk API (http://api.bike-stats.co.uk/service/rest/bikestats?format=csv),
+// which is no longer available
+String bikeDataFile = "bikestats.csv";
 
 UnfoldingMap map;
 

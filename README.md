@@ -40,15 +40,31 @@ Restart Processing. The examples are listed under *Contributed Libraries* in *Fi
 Get the original Unfolding from <http://unfoldingmaps.org/> or directly from here: http://unfoldingmaps.org/downloads
 
 
-## Known Issues
-Several map tile services used by Unfolding have changed since the original release:
+## Map Tile Providers
+Several map tile services used by Unfolding have changed since the original release. This fork adapts to them:
 
-* The default provider (`OpenStreetMap.PositronMapProvider`, served by CARTO) now shows "API KEY REQUIRED" on every tile.
-* Stamen tiles (`StamenMapProvider`) are no longer available, and OpenStreetMap's tile servers block Unfolding's requests.
-* `EsriProvider` and `Microsoft` tiles still load. Use one of them for now, e.g.
-  `new UnfoldingMap(this, new EsriProvider.WorldGrayCanvas())` or `new UnfoldingMap(this, new Microsoft.RoadProvider())`.
+* The default provider is now `EsriProvider.WorldGrayCanvas` (up to zoom level 16), as CARTO's Positron, the previous
+  default, requires an API key.
+* Some services require an API key, which you pass to the provider:
 
-`MBTilesApp` additionally needs the SQLite JDBC driver in the sketch's `code` folder (see `code/how-to-install-sqlite.txt`).
+  | Provider | API key from |
+  |---|---|
+  | `CartoDB.*`, `OpenStreetMap.PositronMapProvider`, `OpenStreetMap.DarkMatterMapProvider` | [CARTO](https://carto.com/basemaps/apikey) |
+  | `StamenMapProvider.*` (now hosted by Stadia Maps) | [Stadia Maps](https://stadiamaps.com/) |
+  | `ThunderforestProvider.*` | [Thunderforest](https://www.thunderforest.com/) |
+
+  ```java
+  map = new UnfoldingMap(this, new StamenMapProvider.Toner("YOUR_API_KEY"));
+  ```
+* Tiles are requested with the User-Agent `Unfolding/<version> (+https://github.com/enkatsu/unfolding)`, which
+  OpenStreetMap's tile servers require. To identify your own application, set `TileLoader.userAgent` before creating
+  maps. When using `OpenStreetMap.OpenStreetMapProvider`, follow the
+  [tile usage policy](https://operations.osmfoundation.org/policies/tiles/), e.g. show "© OpenStreetMap contributors".
+
+Some providers from the original release no longer work, e.g. `OpenStreetMap.OSMGrayProvider`, `Yahoo`, and
+`MapQuestProvider`.
+
+`MBTilesApp` needs the SQLite JDBC driver in the sketch's `code` folder (see `code/how-to-install-sqlite.txt`).
 
 
 ## Building from Source

@@ -3,7 +3,7 @@ package de.fhpotsdam.unfolding.mapdisplay;
 import processing.core.PApplet;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.providers.AbstractMapProvider;
-import de.fhpotsdam.unfolding.providers.OpenStreetMap;
+import de.fhpotsdam.unfolding.providers.EsriProvider;
 
 /**
  * A factory to create MapDisplays for the UnfoldingMap, depending on specified map features.
@@ -52,7 +52,7 @@ public class MapDisplayFactory {
 	}
 
 	public static AbstractMapProvider getDefaultProvider() {
-		//return new OpenStreetMap.OSMGrayProvider();
-		return new OpenStreetMap.PositronMapProvider();
+		// CARTO's Positron (the previous default) requires an API key
+		return new EsriProvider.WorldGrayCanvas();
 	}
 }

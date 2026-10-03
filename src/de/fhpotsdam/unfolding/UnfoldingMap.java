@@ -33,7 +33,9 @@ import processing.core.PVector;
  */
 public class UnfoldingMap implements MapEventListener {
 
-	public static final String GREETING_MESSAGE = "Unfolding Map v0.9.93";
+	public static final String VERSION = "0.9.93";
+
+	public static final String GREETING_MESSAGE = "Unfolding Map v" + VERSION;
 
 	public static final float SCALE_DELTA_IN = 1.05f;
 	public static final float SCALE_DELTA_OUT = 1 / 1.05f;
@@ -265,6 +267,7 @@ public class UnfoldingMap implements MapEventListener {
 
 		this.mapDisplay = MapDisplayFactory.getMapDisplay(p, id, x, y, width, height, useMask, useDistortion, provider,
 				this, renderer);
+		maxScale = Math.min(maxScale, getScaleFromZoom(mapDisplay.getMapProvider().maxZoomLevel()));
 
 		// panCenterZoomTo(PRIME_MERIDIAN_EQUATOR_LOCATION, DEFAULT_ZOOM_LEVEL);
 

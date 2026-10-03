@@ -11,7 +11,7 @@ import de.fhpotsdam.unfolding.data.ShapeFeature;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.SimpleLinesMarker;
-import de.fhpotsdam.unfolding.providers.StamenMapProvider;
+import de.fhpotsdam.unfolding.providers.EsriProvider;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 
 /**
@@ -36,10 +36,10 @@ public class TransitLinesMarkerApp extends PApplet {
 	}
 
 	public void setup() {
-		map = new UnfoldingMap(this, new StamenMapProvider.TonerBackground());
+		map = new UnfoldingMap(this, new EsriProvider.WorldGrayCanvas());
 		map.zoomToLevel(11);
 		map.panTo(bostonLocation);
-		map.setZoomRange(9, 17); // prevent zooming too far out
+		map.setZoomRange(9, 16); // prevent zooming too far out
 		map.setPanningRestriction(bostonLocation, 50);
 		MapUtils.createDefaultEventDispatcher(this, map);
 

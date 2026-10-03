@@ -1,4 +1,63 @@
-RELEASE NOTES 
+RELEASE NOTES
+
+
+0.9.95 - 3 October 2026
+-----------------------------
+
+Bug fixes
+- Fixed MapBox.BlankProvider. The transparent tile is created locally now.
+- Fixed EsriProvider.OceanBasemap, which moved to Ocean/World_Ocean_Base.
+- Restricted the zoom range of EsriProvider.WorldPhysical (8), WorldTerrain (9), WorldShadedRelief (13)
+  and OceanBasemap (16) to the levels with map data.
+- Fixed examples that used providers requiring an API key.
+
+Features
+- Added MapBox.StyleProvider for the current Mapbox API (access token required), with the styles
+  Streets, Outdoors, Light, Dark, Satellite and SatelliteStreets.
+- Added API key support to OpenWeatherProvider.
+- Added EsriProvider.WorldDarkGrayCanvas.
+- Added Simple3DMapApp example.
+
+Other
+- Deprecated providers whose tile servers no longer exist: AcetateProvider, ImmoScout, MapQuestProvider,
+  OpenMapSurferProvider, Yahoo, EsriProvider.DeLorme, OpenStreetMap.CloudmadeProvider,
+  OpenWeatherProvider.PressureContour, and MapBox.WorldLightProvider, ControlRoomProvider and LacquerProvider.
+- Deprecated Google providers, which use unofficial tile URLs not permitted by Google's Terms of Service.
+- Normalized line endings to LF.
+
+
+0.9.94 - 3 October 2026
+-----------------------------
+
+Bug fixes
+- Fixed loading tiles from OpenStreetMap, which blocks requests without an identifying User-Agent.
+  Set TileLoader.userAgent to identify your own application.
+- Fixed loading tiles from servers that redirect from HTTP to HTTPS.
+- Error responses of tile servers are no longer shown as tiles.
+- Fixed examples that used Stamen tiles or the defunct bike-stats API.
+
+Features
+- Changed the default provider to EsriProvider.WorldGrayCanvas, as CARTO's Positron requires an API key.
+- Added API key support for CARTO, Stadia Maps (Stamen) and Thunderforest providers.
+- Moved StamenMapProvider to Stadia Maps.
+- Added AbstractMapProvider.maxZoomLevel() to restrict the zoom range of maps to the provider's levels.
+- Deprecated OpenStreetMap.OSMGrayProvider.
+
+Other
+- Removed the Ant build. The Java examples and tests are built with Gradle now.
+
+
+0.9.93 - 1 October 2026
+-----------------------------
+
+Tested with Processing 4 (requires Processing 4.0 or later)
+
+Features
+- Added clearAllMarkers and removeMarker to UnfoldingMap. #171
+
+Other
+- Built with Gradle and Java 17, based on processing-library-template.
+- Releases are published on GitHub (https://github.com/enkatsu/unfolding/releases).
 
 
 0.9.9

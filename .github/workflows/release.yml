@@ -4,7 +4,7 @@
 # To release:
 #   1. Update version (int, must increase) and prettyVersion in release.properties,
 #      and VERSION in src/de/fhpotsdam/unfolding/UnfoldingMap.java, and commit.
-#   2. Push a tag "v<prettyVersion>", e.g. "git tag v0.9.94 && git push origin v0.9.94".
+#   2. Push a tag "v<prettyVersion>", e.g. "git tag v0.9.95 && git push origin v0.9.95".
 name: Release
 
 on:

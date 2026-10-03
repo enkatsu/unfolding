@@ -101,4 +101,23 @@ public class SimplePolygonMarker extends AbstractShapeMarker {
 		pg.popStyle();
 	}
 
+	/**
+	 * Returns the distance (in km) between the given location and this polygon, i.e. 0 if the location is inside the
+	 * polygon (and not inside one of its holes), or the distance to the nearest edge otherwise.
+	 */
+	@Override
+	public double getDistanceTo(Location location) {
+		double minDistance = getDistanceToEdges(location, locations, true);
+		boolean inside = isInsideByLocation(location);
+		if (getInteriorRings() != null) {
+			for (List<Location> ring : getInteriorRings()) {
+				minDistance = Math.min(minDistance, getDistanceToEdges(location, ring, true));
+				if (isInside(location.getLat(), location.getLon(), ring)) {
+					inside = false;
+				}
+			}
+		}
+		return inside ? 0 : minDistance;
+	}
+
 }

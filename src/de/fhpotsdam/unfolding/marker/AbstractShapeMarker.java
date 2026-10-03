@@ -278,6 +278,75 @@ public abstract class AbstractShapeMarker extends AbstractMarker {
 
 	}
 
+	/**
+	 * Returns the distance (in km) between the given location and the nearest edge of this shape, i.e. its lines.
+	 * 
+	 * (The centroid of the shape is not used, as it can be far away from parts of the shape, e.g. of long lines.)
+	 */
+	@Override
+	public double getDistanceTo(Location location) {
+		return getDistanceToEdges(location, locations, false);
+	}
+
+	/**
+	 * Returns the distance (in km) between the given location and the nearest edge of the given vertices.
+	 * 
+	 * @param location
+	 *            The location to measure the distance from.
+	 * @param vertices
+	 *            The vertices of the edges.
+	 * @param closed
+	 *            Whether the last vertex is connected to the first one (as in polygons).
+	 * @return The distance in km, or Double.MAX_VALUE if there are no vertices.
+	 */
+	protected static double getDistanceToEdges(Location location, List<Location> vertices, boolean closed) {
+		if (vertices.isEmpty()) {
+			return Double.MAX_VALUE;
+		}
+		if (vertices.size() == 1) {
+			return GeoUtils.getDistance(location, vertices.get(0));
+		}
+
+		// Finds the nearest location on all edges in Mercator coordinates, as maps are drawn in Mercator projection,
+		// i.e. edges are straight lines in these coordinates. (Fast also for shapes with many vertices.) Then measures
+		// the actual distance to it.
+		double x = Math.toRadians(location.getLon());
+		double y = mercatorY(location.getLat());
+		double minSquaredDistance = Double.MAX_VALUE;
+		Location nearest = null;
+		int edges = closed ? vertices.size() : vertices.size() - 1;
+		double bx = Math.toRadians(vertices.get(0).getLon());
+		double by = mercatorY(vertices.get(0).getLat());
+		for (int i = 0; i < edges; i++) {
+			// Reuses the end point of the previous edge as start point
+			double ax = bx;
+			double ay = by;
+			Location b = vertices.get((i + 1) % vertices.size());
+			bx = Math.toRadians(b.getLon());
+			by = mercatorY(b.getLat());
+			double dx = bx - ax;
+			double dy = by - ay;
+
+			// Projects the location onto the edge, and clamps it to the edge's end points
+			double lengthSquared = dx * dx + dy * dy;
+			double t = lengthSquared == 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / lengthSquared));
+			double nearestX = ax + t * dx;
+			double nearestY = ay + t * dy;
+			double squaredDistance = (x - nearestX) * (x - nearestX) + (y - nearestY) * (y - nearestY);
+			if (squaredDistance < minSquaredDistance) {
+				minSquaredDistance = squaredDistance;
+				nearest = new Location(Math.toDegrees(Math.atan(Math.sinh(nearestY))), Math.toDegrees(nearestX));
+			}
+		}
+		return GeoUtils.getDistance(location, nearest);
+	}
+
+	private static double mercatorY(float latitude) {
+		// Limited to the latitudes shown on Mercator maps
+		double lat = Math.toRadians(Math.max(-85.0511, Math.min(85.0511, latitude)));
+		return Math.log(Math.tan(Math.PI / 4 + lat / 2));
+	}
+
 	@Override
 	public boolean isInside(UnfoldingMap map, float checkX, float checkY) {
 		List<ScreenPosition> positions = new ArrayList<ScreenPosition>();

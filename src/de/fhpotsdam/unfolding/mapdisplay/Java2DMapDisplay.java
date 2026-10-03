@@ -42,6 +42,10 @@ public class Java2DMapDisplay extends AbstractMapDisplay implements PConstants {
 	// Background color
 	protected Integer bgColor = null;
 
+	// Offscreen canvases for the JAVA2D renderer. (OpenGLMapDisplay uses its own.)
+	private PGraphics java2DInnerPG;
+	private PGraphics java2DOuterPG;
+
 	// To notify client app when all tiles have been loaded
 	private static final String TILESLOADED_METHOD_NAME = "tilesLoaded";
 	private Method tilesLoadedMethod = null;
@@ -322,25 +326,74 @@ public class Java2DMapDisplay extends AbstractMapDisplay implements PConstants {
 
 	// DRAWING --------------------------------------------------
 
+	/**
+	 * Gets the offscreen canvas the inner map (the tiles) is drawn on.
+	 *
+	 * NB: The map is not drawn on the sketch's canvas directly, as that would ignore the map's position and size, and
+	 * would clear anything drawn on the sketch's canvas (see draw()).
+	 */
 	public PGraphics getInnerPG() {
-		// NB Always inner graphics, this one not used. Implemented in sub classes.
-		return papplet.g;
+		if (java2DInnerPG == null) {
+			java2DInnerPG = createJava2DGraphics();
+		}
+		return java2DInnerPG;
 	}
 
+	/**
+	 * Gets the offscreen canvas the inner map and the markers are drawn on, before drawing it on the sketch's canvas.
+	 */
 	public PGraphics getOuterPG() {
-		return papplet.g;
+		if (java2DOuterPG == null) {
+			java2DOuterPG = createJava2DGraphics();
+		}
+		return java2DOuterPG;
+	}
+
+	private PGraphics createJava2DGraphics() {
+		PGraphics pg = papplet.createGraphics(Math.max(1, (int) getWidth()), Math.max(1, (int) getHeight()), JAVA2D);
+		pg.smooth(papplet.g.smooth);
+		return pg;
+	}
+
+	@Override
+	public void resize(float width, float height) {
+		super.resize(width, height);
+
+		// Re-created in the new size when used next
+		if (java2DInnerPG != null) {
+			java2DInnerPG.dispose();
+			java2DInnerPG = null;
+		}
+		if (java2DOuterPG != null) {
+			java2DOuterPG.dispose();
+			java2DOuterPG = null;
+		}
 	}
 
 	/**
 	 * Is called last in {@link #draw()}. May be implemented in sub-classes to handle drawing on outerPG.
 	 */
 	protected void postDraw() {
-
-		// Draws all markers
+		// Draws inner map and markers
+		PGraphics outerPG = getOuterPG();
+		outerPG.beginDraw();
+		outerPG.clear();
+		outerPG.image(getInnerPG(), 0, 0);
 		for (MarkerManager<Marker> mm : markerManagerList) {
 			mm.draw();
 		}
+		outerPG.endDraw();
 
+		// Transforms (outer) map pane, and draws inner map + marker onto canvas
+		PGraphics canvasPG = papplet.g;
+		canvasPG.pushMatrix();
+		canvasPG.translate(offsetX, offsetY);
+		canvasPG.applyMatrix(matrix.m00, matrix.m01, matrix.m03, matrix.m10, matrix.m11, matrix.m13);
+		canvasPG.pushStyle();
+		canvasPG.imageMode(CORNER);
+		canvasPG.image(outerPG, 0, 0);
+		canvasPG.popStyle();
+		canvasPG.popMatrix();
 	}
 
 	/**

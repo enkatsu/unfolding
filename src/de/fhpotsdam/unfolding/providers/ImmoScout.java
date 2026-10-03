@@ -3,8 +3,13 @@ package de.fhpotsdam.unfolding.providers;
 import de.fhpotsdam.unfolding.core.Coordinate;
 import de.fhpotsdam.unfolding.providers.Microsoft.MicrosoftProvider;
 
+/**
+ * @deprecated The ImmobilienScout24 heat map server is no longer available.
+ */
+@Deprecated
 public class ImmoScout {
 
+	@Deprecated
 	public static abstract class ImmoScoutProvider extends MicrosoftProvider {
 
 		public ImmoScoutProvider() {
@@ -24,6 +29,7 @@ public class ImmoScout {
 		}
 	}
 
+	@Deprecated
 	public static class HeatMapProvider extends ImmoScoutProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			// old:

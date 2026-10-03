@@ -8,8 +8,12 @@ import de.fhpotsdam.unfolding.geo.Transformation;
 /**
  * Provider based on Leaflet-providers: http://leaflet-extras.github.io/leaflet-providers/preview/index.html
  * Various map tiles courtesy of MapQuest: http://www.mapquest.com
+ * 
+ * @deprecated The MapQuest Open tile server (mqcdn.com) is no longer available.
  */
+@Deprecated
 public class MapQuestProvider {
+	@Deprecated
 	public static abstract class GenericMapQuestProvider extends AbstractMapTileUrlProvider {
 
 		public GenericMapQuestProvider() {
@@ -32,6 +36,7 @@ public class MapQuestProvider {
 		public abstract String[] getTileUrls(Coordinate coordinate);
 	}
 
+	@Deprecated
 	public static class OSM extends GenericMapQuestProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String url = "http://otile1.mqcdn.com/tiles/1.0.0/map/" + getZoomString(coordinate) + ".jpeg";
@@ -39,6 +44,7 @@ public class MapQuestProvider {
 		}
 	}
 
+	@Deprecated
 	public static class Aerial extends GenericMapQuestProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String url = "http://otile1.mqcdn.com/tiles/1.0.0/sat/" + getZoomString(coordinate) + ".jpg";

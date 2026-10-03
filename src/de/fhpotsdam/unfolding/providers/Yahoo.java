@@ -5,12 +5,17 @@ import de.fhpotsdam.unfolding.core.Coordinate;
 import de.fhpotsdam.unfolding.geo.MercatorProjection;
 import de.fhpotsdam.unfolding.geo.Transformation;
 
+/**
+ * @deprecated The Yahoo Maps tile server is no longer available.
+ */
+@Deprecated
 public class Yahoo {
 
 	public static final String ROAD_VERSION = "3.52";
 	public static final String AERIAL_VERSION = "1.7";
 	public static final String HYBRID_VERSION = "2.2";
 
+	@Deprecated
 	public static abstract class YahooProvider extends AbstractMapTileUrlProvider {
 
 		public YahooProvider() {
@@ -33,6 +38,7 @@ public class Yahoo {
 
 	}
 
+	@Deprecated
 	public static class RoadProvider extends YahooProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			return new String[] { "http://us.maps2.yimg.com/us.png.maps.yimg.com/png?v=" + ROAD_VERSION + "&t=m&"
@@ -40,6 +46,7 @@ public class Yahoo {
 		}
 	}
 
+	@Deprecated
 	public static class AerialProvider extends YahooProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			return new String[] { "http://us.maps3.yimg.com/aerial.maps.yimg.com/tile?v=" + AERIAL_VERSION + "&t=a&"
@@ -47,6 +54,7 @@ public class Yahoo {
 		}
 	}
 
+	@Deprecated
 	public static class HybridProvider extends YahooProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String under = new AerialProvider().getTileUrls(coordinate)[0];

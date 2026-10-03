@@ -30,6 +30,10 @@ public class MapBox {
 		}
 	}
 
+	/**
+	 * @deprecated The MapBox tile server (tile.mapbox.com) is no longer available.
+	 */
+	@Deprecated
 	public static class WorldLightProvider extends MapBoxProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String url = "http://c.tile.mapbox.com/mapbox/1.0.0/world-light/" + getZoomString(coordinate) + ".png";
@@ -37,6 +41,10 @@ public class MapBox {
 		}
 	}
 
+	/**
+	 * @deprecated The MapBox tile server (tile.mapbox.com) is no longer available.
+	 */
+	@Deprecated
 	public static class ControlRoomProvider extends MapBoxProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String url = "http://c.tile.mapbox.com/mapbox/1.0.0/control-room/" + getZoomString(coordinate) + ".png";
@@ -44,6 +52,10 @@ public class MapBox {
 		}
 	}
 
+	/**
+	 * @deprecated The MapBox v3 API has been retired.
+	 */
+	@Deprecated
 	public static class LacquerProvider extends MapBoxProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String url = "http://c.tiles.mapbox.com/v3/mapbox.mapbox-lacquer/" + getPositiveZoomString(coordinate)
@@ -96,6 +108,10 @@ public class MapBox {
 	}
 
 	// REMOVE
+	/**
+	 * @deprecated The blank tile (tillnagel.com) is no longer available.
+	 */
+	@Deprecated
 	public static class BlankProvider extends MapBoxProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String url = "http://tillnagel.com/transparent255.png";

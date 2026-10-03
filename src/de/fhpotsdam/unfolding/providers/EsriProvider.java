@@ -39,6 +39,10 @@ public class EsriProvider {
 		}
 	}
 
+	/**
+	 * @deprecated The DeLorme World Base Map service has been retired by Esri.
+	 */
+	@Deprecated
 	public static class DeLorme extends GenericEsriProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String url = "http://server.arcgisonline.com/ArcGIS/rest/services/Specialty/DeLorme_World_Base_Map/MapServer/tile/" + getZoomString(coordinate) + ".jpg";
@@ -58,6 +62,12 @@ public class EsriProvider {
 			String url = "http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/" + getZoomString(coordinate) + ".jpg";
 			return new String[] { url };
 		}
+
+		// Higher zoom levels only show "Map data not yet available"
+		@Override
+		public int maxZoomLevel() {
+			return 9;
+		}
 	}
 	
 	
@@ -73,12 +83,25 @@ public class EsriProvider {
 			String url = "http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/" + getZoomString(coordinate) + ".jpg";
 			return new String[] { url };
 		}
+
+		// Higher zoom levels only show "Map data not yet available"
+		@Override
+		public int maxZoomLevel() {
+			return 8;
+		}
 	}
 	
 	public static class OceanBasemap extends GenericEsriProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/" + getZoomString(coordinate) + ".jpg";
+			// Ocean_Basemap has been replaced by Ocean/World_Ocean_Base
+			String url = "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/" + getZoomString(coordinate) + ".jpg";
 			return new String[] { url };
+		}
+
+		// Higher zoom levels only show "Map data not yet available"
+		@Override
+		public int maxZoomLevel() {
+			return 16;
 		}
 	}
 	

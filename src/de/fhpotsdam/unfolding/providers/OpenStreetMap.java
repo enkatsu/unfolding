@@ -78,7 +78,10 @@ public class OpenStreetMap {
 
 	/**
 	 * Map tiles with custom styled maps via CloudMade with OpenStreetMap data.
+	 * 
+	 * @deprecated CloudMade no longer provides map tiles.
 	 */
+	@Deprecated
 	public static class CloudmadeProvider extends GenericOpenStreetMapProvider {
 		private String api_key;
 		private int style_id;

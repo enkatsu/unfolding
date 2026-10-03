@@ -61,8 +61,10 @@ Several map tile services used by Unfolding have changed since the original rele
   maps. When using `OpenStreetMap.OpenStreetMapProvider`, follow the
   [tile usage policy](https://operations.osmfoundation.org/policies/tiles/), e.g. show "© OpenStreetMap contributors".
 
-Some providers from the original release no longer work, e.g. `OpenStreetMap.OSMGrayProvider`, `Yahoo`, and
-`MapQuestProvider`.
+Providers whose tile servers no longer exist are marked as deprecated: `AcetateProvider`, `ImmoScout`,
+`MapQuestProvider`, `OpenMapSurferProvider`, `Yahoo`, `EsriProvider.DeLorme`, `MapBox.WorldLightProvider`,
+`MapBox.ControlRoomProvider`, `MapBox.LacquerProvider`, `MapBox.BlankProvider`, `OpenStreetMap.OSMGrayProvider`, and
+`OpenStreetMap.CloudmadeProvider`. `OpenWeatherProvider` requires an API key, which is not supported yet.
 
 `MBTilesApp` needs the SQLite JDBC driver in the sketch's `code` folder (see `code/how-to-install-sqlite.txt`).
 

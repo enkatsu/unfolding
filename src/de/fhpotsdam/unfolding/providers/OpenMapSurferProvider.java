@@ -8,8 +8,12 @@ import de.fhpotsdam.unfolding.geo.Transformation;
 /**
  * Provider based on Leaflet-providers: http://leaflet-extras.github.io/leaflet-providers/preview/index.html
  * Various map tiles from GIScience Research Group @ University of Heidelberg: http://giscience.uni-hd.de
+ * 
+ * @deprecated The OpenMapSurfer tile server (openmapsurfer.uni-hd.de) is no longer available.
  */
+@Deprecated
 public class OpenMapSurferProvider {
+	@Deprecated
 	public static abstract class GenericOpenMapSurferProvider extends AbstractMapTileUrlProvider {
 
 		public GenericOpenMapSurferProvider() {
@@ -32,6 +36,7 @@ public class OpenMapSurferProvider {
 		public abstract String[] getTileUrls(Coordinate coordinate);
 	}
 
+	@Deprecated
 	public static class Roads extends GenericOpenMapSurferProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String url = "http://openmapsurfer.uni-hd.de/tiles/roads/" + getZoomString(coordinate) ;
@@ -39,6 +44,7 @@ public class OpenMapSurferProvider {
 		}
 	}
 
+	@Deprecated
 	public static class Grayscale extends GenericOpenMapSurferProvider {
 		public String[] getTileUrls(Coordinate coordinate) {
 			String url = "http://openmapsurfer.uni-hd.de/tiles/roadsg/" + getZoomString(coordinate) ;

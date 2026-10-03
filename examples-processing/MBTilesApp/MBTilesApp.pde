@@ -1,6 +1,6 @@
 
 /**
- * YOU NEED TO download the sqlitejdbc driver from https://bitbucket.org/xerial/sqlite-jdbc/
+ * YOU NEED TO download the sqlitejdbc driver from https://github.com/xerial/sqlite-jdbc/releases
  * and put the jar file into the 'code' directory of this sketch.
  *
  *

@@ -267,7 +267,15 @@ public class UnfoldingMap implements MapEventListener {
 
 		this.mapDisplay = MapDisplayFactory.getMapDisplay(p, id, x, y, width, height, useMask, useDistortion, provider,
 				this, renderer);
-		maxScale = Math.min(maxScale, getScaleFromZoom(mapDisplay.getMapProvider().maxZoomLevel()));
+		AbstractMapProvider mapProvider = mapDisplay.getMapProvider();
+		minScale = Math.max(minScale, getScaleFromZoom(mapProvider.minZoomLevel()));
+		maxScale = Math.min(maxScale, getScaleFromZoom(mapProvider.maxZoomLevel()));
+		if (mapProvider.defaultLocation() != null) {
+			zoomAndPanTo(mapProvider.defaultZoomLevel(), mapProvider.defaultLocation());
+		} else {
+			// Starts within the zoom range of the provider
+			setInnerScale(mapDisplay.innerScale);
+		}
 
 		// panCenterZoomTo(PRIME_MERIDIAN_EQUATOR_LOCATION, DEFAULT_ZOOM_LEVEL);
 

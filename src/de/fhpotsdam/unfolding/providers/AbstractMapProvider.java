@@ -54,6 +54,36 @@ public abstract class AbstractMapProvider {
 	public int maxZoomLevel() {
 		return 18;
 	}
+
+	/**
+	 * Gets the minimum zoom level this provider has tiles for. Maps created with this provider restrict their zoom
+	 * range to this level.
+	 * 
+	 * @return The minimum zoom level.
+	 */
+	public int minZoomLevel() {
+		return 0;
+	}
+
+	/**
+	 * Gets the location maps created with this provider initially show, e.g. if the provider only has tiles for a
+	 * specific area.
+	 * 
+	 * @return The location, or null if maps should use their default location.
+	 */
+	public Location defaultLocation() {
+		return null;
+	}
+
+	/**
+	 * Gets the zoom level maps created with this provider initially show. Only used if {@link #defaultLocation()} is
+	 * not null.
+	 * 
+	 * @return The zoom level.
+	 */
+	public int defaultZoomLevel() {
+		return minZoomLevel();
+	}
 	
 
 	public Coordinate locationCoordinate(Location location) {

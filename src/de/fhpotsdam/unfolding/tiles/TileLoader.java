@@ -9,7 +9,6 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 
 import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PImage;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.core.Coordinate;
@@ -35,8 +34,8 @@ public class TileLoader implements Runnable {
 	/** Shows coordinate information for tile. */
 	private static final boolean SHOW_TILE_COORDINATES = false;
 	/**
-	 * Indicates whether to try loading again (repeatedly) for tiles which could not be loaded. Uses transparent tile if
-	 * false.
+	 * Indicates whether to try loading again (repeatedly) for tiles which could not be loaded. If false, tiles are tried
+	 * {@link AbstractMapDisplay#maxTileLoadAttempts} times, and then shown as transparent tiles.
 	 */
 	private static final boolean TRY_AGAIN_ON_NON_LOADED_TILES = false;
 
@@ -63,16 +62,11 @@ public class TileLoader implements Runnable {
 	/** The actual coordinates of the tile to load. */
 	protected Coordinate coordinate;
 
-	/** Empty image in tile dimension to be used as place holder. */
-	private PImage cachedEmpyImage;
-
 	public TileLoader(PApplet p, AbstractMapProvider provider, TileLoaderListener listener, Coordinate coordinate) {
 		this.p = p;
 		this.provider = provider;
 		this.listener = listener;
 		this.coordinate = coordinate;
-
-		cachedEmpyImage = new PImage(provider.tileWidth(), provider.tileHeight(), PConstants.ARGB);
 	}
 
 	/**
@@ -95,10 +89,7 @@ public class TileLoader implements Runnable {
 			}
 		}
 
-		if (tileImg == null && !tryAgainOnNonLoadedTiles) {
-			// If no tile was provided, use transparent image.
-			tileImg = cachedEmpyImage;
-		}
+		// NB: If the tile could not be loaded, tileImg is null. The listener then decides whether to try again.
 
 		if (showDebugBorder || showTileCoordinates) {
 			// Shows debug information atop original tile image.

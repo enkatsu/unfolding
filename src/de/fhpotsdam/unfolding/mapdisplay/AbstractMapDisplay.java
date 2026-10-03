@@ -8,7 +8,9 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
+import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PImage;
 import processing.core.PVector;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.core.Coordinate;
@@ -73,6 +75,11 @@ public abstract class AbstractMapDisplay implements TileLoaderListener {
 	public int max_images_to_keep = 1024;
 	public int grid_padding = 1; // set to 0 for debugging purposes
 
+	/** Number of attempts to load a tile, before it is shown as transparent tile. */
+	public int maxTileLoadAttempts = 3;
+	/** Delay before trying to load a tile again, after it could not be loaded. */
+	public long tileRetryDelayMillis = 2000;
+
 	/** Check whether all currently visible tiles have been loaded. */
 	protected boolean allTilesLoaded = false;
 
@@ -85,6 +92,10 @@ public abstract class AbstractMapDisplay implements TileLoaderListener {
 	/** Queue of coordinates to create threads and load tiles. */
 	protected Vector<Coordinate> queue = new Vector<Coordinate>();
 	protected Vector<Object> recent_images = new Vector<Object>();
+	/** Number of failed attempts to load the tile for coordinate. */
+	protected Hashtable<Coordinate, Integer> failedTileLoads = new Hashtable<Coordinate, Integer>();
+	/** Time (in milliseconds) after which the tile for coordinate may be loaded again. */
+	protected Hashtable<Coordinate, Long> tileRetryTimes = new Hashtable<Coordinate, Long>();
 
 	protected ZoomComparator zoomComparator = new ZoomComparator();
 	protected QueueSorter queueSorter = new QueueSorter();
@@ -120,6 +131,8 @@ public abstract class AbstractMapDisplay implements TileLoaderListener {
 			images.clear();
 			queue.clear();
 			pending.clear();
+			failedTileLoads.clear();
+			tileRetryTimes.clear();
 		}
 	}
 
@@ -324,20 +337,42 @@ public abstract class AbstractMapDisplay implements TileLoaderListener {
 	protected abstract TileLoader createTileLoader(Coordinate coord);
 
 	public void grabTile(Coordinate coord) {
-		if (!pending.containsKey(coord) && !queue.contains(coord) && !images.containsKey(coord))
+		if (!pending.containsKey(coord) && !queue.contains(coord) && !images.containsKey(coord)
+				&& !isWaitingForRetry(coord))
 			queue.add(coord);
+	}
+
+	private boolean isWaitingForRetry(Coordinate coord) {
+		Long retryTime = tileRetryTimes.get(coord);
+		return retryTime != null && System.currentTimeMillis() < retryTime;
 	}
 
 	// TODO images & pending thread safe?
 	public void tileLoaded(Coordinate coord, Object image) {
 		if (pending.containsKey(coord) && coord != null && image != null) {
 			images.put(coord, image);
-			pending.remove(coord);
+			failedTileLoads.remove(coord);
+			tileRetryTimes.remove(coord);
+		} else if (pending.containsKey(coord) && coord != null) {
+			// Tile could not be loaded. Does not store it, so it is loaded again after a delay (and a parent tile is
+			// shown meanwhile), as the failure may be temporary, e.g. a timeout.
+			int attempts = failedTileLoads.containsKey(coord) ? failedTileLoads.get(coord) + 1 : 1;
+			Runnable tileLoader = pending.get(coord);
+			boolean tryAgain = tileLoader instanceof TileLoader && ((TileLoader) tileLoader).tryAgainOnNonLoadedTiles;
+			if (tryAgain || attempts < maxTileLoadAttempts) {
+				failedTileLoads.put(coord, attempts);
+				tileRetryTimes.put(coord, System.currentTimeMillis() + tileRetryDelayMillis);
+			} else {
+				// Gives up, and uses transparent tile
+				images.put(coord, new PImage(provider.tileWidth(), provider.tileHeight(), PConstants.ARGB));
+				failedTileLoads.remove(coord);
+				tileRetryTimes.remove(coord);
+			}
 		} else {
 			// Re-adds to queue
 			queue.add(coord);
-			pending.remove(coord);
 		}
+		pending.remove(coord);
 
 		if (pending.size() == 0 && queue.size() == 0) {
 			allTilesLoaded = true;
@@ -438,6 +473,8 @@ public abstract class AbstractMapDisplay implements TileLoaderListener {
 	public void setProvider(AbstractMapProvider provider) {
 		this.provider = provider;
 		cleanupImageBuffer(true);
+		failedTileLoads.clear();
+		tileRetryTimes.clear();
 	}
 
 	protected void createDefaultMarkerManager(UnfoldingMap map) {

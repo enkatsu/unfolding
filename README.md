@@ -30,7 +30,7 @@ such as OpenStreetMap or TileMill.
 ### Processing 4
 Download the latest release from <https://github.com/enkatsu/unfolding/releases>, then either
 
-* drag and drop `Unfolding.pdex` onto the Processing editor, or
+* double-click `Unfolding.pdex` (macOS and Windows), or
 * unzip `Unfolding.zip` into the `libraries` folder of your sketchbook
   (e.g. `~/Documents/Processing/libraries/Unfolding`).
 

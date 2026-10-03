@@ -139,10 +139,8 @@ dependencies {
     compileOnly(group = "org.processing", name = "core", version = "4.3.1")
 
     // bundled with the library (copied to library/ in the release)
-    implementation(group = "log4j", name = "log4j", version = "1.2.15") {
-        // 1.2.15 declares optional dependencies (jms, jmx, mail) that are not needed and not on Maven Central
-        isTransitive = false
-    }
+    // reload4j: drop-in replacement for log4j 1.2 (same org.apache.log4j API) with its vulnerabilities fixed
+    implementation(group = "ch.qos.reload4j", name = "reload4j", version = "1.2.26")
     implementation(files("lib/json4processing.jar"))
 
     // only needed to compile TuioCursorHandler; users of TUIO interactions provide it themselves

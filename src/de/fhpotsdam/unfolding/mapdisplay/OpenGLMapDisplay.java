@@ -127,6 +127,8 @@ public class OpenGLMapDisplay extends Java2DMapDisplay implements PConstants {
 			mapDisplayShader.shadeWithMarkers(canvasPG);
 		}
 		canvasPG.pushStyle();
+		// The sketch's imageMode must not change where the map is drawn
+		canvasPG.imageMode(CORNER);
 		canvasPG.image(offscreenCutoffPG, 0, 0);
 		canvasPG.popStyle();
 		canvasPG.popMatrix();

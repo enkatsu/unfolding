@@ -130,5 +130,18 @@ public class EsriProvider {
 			return 16;
 		}
 	}
+
+	public static class WorldDarkGrayCanvas extends GenericEsriProvider {
+		public String[] getTileUrls(Coordinate coordinate) {
+			String url = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/" + getZoomString(coordinate) + ".jpg";
+			return new String[] { url };
+		}
+
+		// Higher zoom levels only show "Map data not yet available"
+		@Override
+		public int maxZoomLevel() {
+			return 16;
+		}
+	}
 }
 

@@ -20,8 +20,7 @@ public class MultiProviderMultiMapApp extends PApplet {
 		size(800, 600, OPENGL);
 
 		map1 = new UnfoldingMap(this, "map1", 10, 10, 385, 580, true, false, new Microsoft.AerialProvider());
-		map2 = new UnfoldingMap(this, "map2", 405, 10, 385, 580, true, false, new OpenStreetMap.CloudmadeProvider(
-				"1a1b06b230af4efdbb989ea99e9841af", 999));
+		map2 = new UnfoldingMap(this, "map2", 405, 10, 385, 580, true, false, new OpenStreetMap.OpenStreetMapProvider());
 		MapUtils.createDefaultEventDispatcher(this, map1, map2);
 	}
 

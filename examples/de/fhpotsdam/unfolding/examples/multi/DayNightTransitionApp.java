@@ -3,7 +3,7 @@ package de.fhpotsdam.unfolding.examples.multi;
 import processing.core.PApplet;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.geo.Location;
-import de.fhpotsdam.unfolding.providers.CartoDB.DarkMatter;
+import de.fhpotsdam.unfolding.providers.EsriProvider;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import de.fhpotsdam.utils.Integrator;
 
@@ -28,7 +28,7 @@ public class DayNightTransitionApp extends PApplet {
 	public void setup() {
 
 		mapDay = new UnfoldingMap(this);
-		mapNight = new UnfoldingMap(this, new DarkMatter());
+		mapNight = new UnfoldingMap(this, new EsriProvider.WorldDarkGrayCanvas());
 
 		mapDay.setZoomRange(1, 3);
 		mapDay.zoomToLevel(3);

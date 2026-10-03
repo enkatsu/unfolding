@@ -1,6 +1,26 @@
 RELEASE NOTES
 
 
+0.9.97 - 4 October 2026
+-----------------------------
+
+Bug fixes
+- Fixed zoomAndPanTo() with tweening ending at the wrong location (the more the higher the zoom level), and the
+  map moving back and forth while animating. #20
+- When dragging across side-by-side maps, only the map the drag started on is panned. #21
+- getNearestMarker() returns lines and polygons the mouse is on. #22
+- mapChanged() is also called when the map is changed directly, e.g. with panTo(), zoomToLevel() or
+  zoomAndPanTo(). #23
+- Fixed log4j warnings in the Processing console. #24
+
+Changes
+- getDistanceTo() of line and polygon markers returns the distance to the nearest edge (0 inside polygons) instead
+  of the distance to the centroid. Use GeoUtils.getDistance(location, marker.getLocation()) for the latter.
+- mapChanged() is called for direct map changes, too. Sketches changing the map on every frame, e.g. with panBy(),
+  now get mapChanged() calls on every frame.
+- If log4j is not configured (e.g. in Processing), only warnings and errors of Unfolding are printed.
+
+
 0.9.96 - 4 October 2026
 -----------------------------
 

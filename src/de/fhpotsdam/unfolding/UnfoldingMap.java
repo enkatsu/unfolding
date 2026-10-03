@@ -36,7 +36,7 @@ import processing.core.PVector;
  */
 public class UnfoldingMap implements MapEventListener {
 
-	public static final String VERSION = "0.9.96";
+	public static final String VERSION = "0.9.97";
 
 	public static final String GREETING_MESSAGE = "Unfolding Map v" + VERSION;
 

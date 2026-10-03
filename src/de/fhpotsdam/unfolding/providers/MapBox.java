@@ -1,7 +1,10 @@
 package de.fhpotsdam.unfolding.providers;
 
 import processing.core.PApplet;
+import processing.core.PConstants;
+import processing.core.PImage;
 import de.fhpotsdam.unfolding.core.Coordinate;
+import de.fhpotsdam.unfolding.providers.OpenStreetMap.GenericOpenStreetMapProvider;
 import de.fhpotsdam.unfolding.providers.OpenStreetMap.OpenStreetMapProvider;
 
 /**
@@ -31,7 +34,7 @@ public class MapBox {
 	}
 
 	/**
-	 * @deprecated The MapBox tile server (tile.mapbox.com) is no longer available.
+	 * @deprecated The MapBox tile server (tile.mapbox.com) is no longer available. Use {@link Light} instead.
 	 */
 	@Deprecated
 	public static class WorldLightProvider extends MapBoxProvider {
@@ -42,7 +45,7 @@ public class MapBox {
 	}
 
 	/**
-	 * @deprecated The MapBox tile server (tile.mapbox.com) is no longer available.
+	 * @deprecated The MapBox tile server (tile.mapbox.com) is no longer available. Use {@link Dark} instead.
 	 */
 	@Deprecated
 	public static class ControlRoomProvider extends MapBoxProvider {
@@ -53,7 +56,7 @@ public class MapBox {
 	}
 
 	/**
-	 * @deprecated The MapBox v3 API has been retired.
+	 * @deprecated The MapBox v3 API has been retired. Use {@link Dark} instead.
 	 */
 	@Deprecated
 	public static class LacquerProvider extends MapBoxProvider {
@@ -61,6 +64,69 @@ public class MapBox {
 			String url = "http://c.tiles.mapbox.com/v3/mapbox.mapbox-lacquer/" + getPositiveZoomString(coordinate)
 					+ ".png";
 			return new String[] { url };
+		}
+	}
+
+	/**
+	 * Map style via the Mapbox Static Tiles API. Requires an access token from https://www.mapbox.com/.
+	 * 
+	 * Use one of the Mapbox styles below, or your own style, e.g.
+	 * {@code new MapBox.StyleProvider("YOUR_USERNAME/YOUR_STYLE_ID", "YOUR_ACCESS_TOKEN")}.
+	 */
+	public static class StyleProvider extends GenericOpenStreetMapProvider {
+		private String styleId;
+
+		/**
+		 * @param styleId
+		 *            The style ID including its owner, e.g. "mapbox/streets-v12".
+		 * @param accessToken
+		 *            The Mapbox access token.
+		 */
+		public StyleProvider(String styleId, String accessToken) {
+			this.styleId = styleId;
+			setApiKey(accessToken);
+		}
+
+		public String[] getTileUrls(Coordinate coordinate) {
+			String url = withApiKey("https://api.mapbox.com/styles/v1/" + styleId + "/tiles/256/"
+					+ getZoomString(coordinate), "access_token");
+			return new String[] { url };
+		}
+	}
+
+	public static class Streets extends StyleProvider {
+		public Streets(String accessToken) {
+			super("mapbox/streets-v12", accessToken);
+		}
+	}
+
+	public static class Outdoors extends StyleProvider {
+		public Outdoors(String accessToken) {
+			super("mapbox/outdoors-v12", accessToken);
+		}
+	}
+
+	public static class Light extends StyleProvider {
+		public Light(String accessToken) {
+			super("mapbox/light-v11", accessToken);
+		}
+	}
+
+	public static class Dark extends StyleProvider {
+		public Dark(String accessToken) {
+			super("mapbox/dark-v11", accessToken);
+		}
+	}
+
+	public static class Satellite extends StyleProvider {
+		public Satellite(String accessToken) {
+			super("mapbox/satellite-v9", accessToken);
+		}
+	}
+
+	public static class SatelliteStreets extends StyleProvider {
+		public SatelliteStreets(String accessToken) {
+			super("mapbox/satellite-streets-v12", accessToken);
 		}
 	}
 
@@ -109,13 +175,22 @@ public class MapBox {
 
 	// REMOVE
 	/**
-	 * @deprecated The blank tile (tillnagel.com) is no longer available.
+	 * Transparent tiles. Same as {@link EmptyMapProvider}.
 	 */
-	@Deprecated
 	public static class BlankProvider extends MapBoxProvider {
+		private PImage blankImage;
+
+		// Created locally, as the blank tile from tillnagel.com is no longer available
+		@Override
+		public PImage getTile(Coordinate coordinate) {
+			if (blankImage == null) {
+				blankImage = new PImage(tileWidth(), tileHeight(), PConstants.ARGB);
+			}
+			return blankImage;
+		}
+
 		public String[] getTileUrls(Coordinate coordinate) {
-			String url = "http://tillnagel.com/transparent255.png";
-			return new String[] { url };
+			return null;
 		}
 	}
 

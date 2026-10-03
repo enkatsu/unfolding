@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import processing.core.PApplet;
+import processing.core.PImage;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.core.Coordinate;
 
@@ -45,6 +46,17 @@ public class MapProviderTest {
 				new CartoDB.Positron("KEY").getTileUrls(coordinate)[0]);
 		assertEquals("https://tile.thunderforest.com/cycle/3/4/2.png?apikey=KEY",
 				new ThunderforestProvider.OpenCycleMap("KEY").getTileUrls(coordinate)[0]);
+		assertEquals("https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/256/3/4/2?access_token=KEY",
+				new MapBox.Light("KEY").getTileUrls(coordinate)[0]);
+		assertEquals("https://api.mapbox.com/styles/v1/user/style/tiles/256/3/4/2?access_token=KEY",
+				new MapBox.StyleProvider("user/style", "KEY").getTileUrls(coordinate)[0]);
+	}
+
+	@Test
+	public void blankProviderReturnsTransparentTile() {
+		PImage tile = new MapBox.BlankProvider().getTile(new Coordinate(2, 4, 3));
+		assertEquals(256, tile.width);
+		assertEquals(0, tile.get(128, 128) >>> 24);
 	}
 
 }

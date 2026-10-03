@@ -10,6 +10,8 @@ import org.apache.log4j.Logger;
 
 import de.fhpotsdam.unfolding.events.MapEvent;
 import de.fhpotsdam.unfolding.events.MapEventListener;
+import de.fhpotsdam.unfolding.events.PanMapEvent;
+import de.fhpotsdam.unfolding.events.ZoomMapEvent;
 import de.fhpotsdam.unfolding.geo.Location;
 import de.fhpotsdam.unfolding.mapdisplay.AbstractMapDisplay;
 import de.fhpotsdam.unfolding.mapdisplay.MapDisplayFactory;
@@ -58,6 +60,10 @@ public class UnfoldingMap implements MapEventListener {
 
 	private static final String MAPCHANGED_METHOD_NAME = "mapChanged";
 	private Method mapChangedMethod = null;
+	/** Depth of nested map changes. The application is only notified of the outermost change. */
+	private int mapChangeDepth = 0;
+	/** Whether the mapChanged() method of the application is currently called. */
+	private boolean callingMapChanged = false;
 
 	/** The minimum scale. If set the map cannot be further zoomed in. Use {@link #setZoomRange(float, float)}. */
 	public float minScale = DEFAULT_MIN_SCALE;
@@ -388,23 +394,71 @@ public class UnfoldingMap implements MapEventListener {
 	 */
 	@Override
 	public void onManipulation(MapEvent mapEvent) {
-		mapEvent.executeManipulationFor(this);
-
-		// Forward map event to application via reflection
-		// TODO See https://github.com/tillnagel/unfolding/issues/102
-		if (mapChangedMethod != null) {
-			try {
-				if (mapChangedMethod.getParameterTypes().length > 0) {
-					mapChangedMethod.invoke(p, mapEvent);
-				} else {
-					mapChangedMethod.invoke(p);
-				}
-			} catch (IllegalArgumentException e) {
-			} catch (IllegalAccessException e) {
-			} catch (InvocationTargetException e) {
-			}
+		// Changes made while executing the event are notified with the event itself
+		mapChangeDepth++;
+		try {
+			mapEvent.executeManipulationFor(this);
+		} finally {
+			mapChangeDepth--;
 		}
 
+		notifyMapChanged(mapEvent);
+	}
+
+	/**
+	 * Forwards a map change to the application, i.e. calls its mapChanged() method via reflection.
+	 * 
+	 * Only notifies of the outermost change, not of changes made internally while changing the map (e.g. zoomAndPanTo()
+	 * zooming and panning). Does not notify of changes made in mapChanged() itself, as that would call it again.
+	 * 
+	 * @param mapEvent
+	 *            The event describing the change.
+	 */
+	protected void notifyMapChanged(MapEvent mapEvent) {
+		if (!isNotifyingMapChanged()) {
+			return;
+		}
+
+		callingMapChanged = true;
+		try {
+			if (mapChangedMethod.getParameterTypes().length > 0) {
+				mapChangedMethod.invoke(p, mapEvent);
+			} else {
+				mapChangedMethod.invoke(p);
+			}
+		} catch (IllegalArgumentException e) {
+		} catch (IllegalAccessException e) {
+		} catch (InvocationTargetException e) {
+		} finally {
+			callingMapChanged = false;
+		}
+	}
+
+	/**
+	 * Checks whether a change would be forwarded to the application. Used to only create map events if needed.
+	 */
+	private boolean isNotifyingMapChanged() {
+		return mapChangedMethod != null && mapChangeDepth == 0 && !callingMapChanged;
+	}
+
+	private PanMapEvent createPanMapEvent(String subType, Location fromLocation, Location toLocation) {
+		PanMapEvent panMapEvent = new PanMapEvent(this, getId(), subType);
+		panMapEvent.setFromLocation(fromLocation);
+		panMapEvent.setToLocation(toLocation);
+		return panMapEvent;
+	}
+
+	private ZoomMapEvent createZoomMapEvent(String subType, Location center) {
+		ZoomMapEvent zoomMapEvent = new ZoomMapEvent(this, getId(), subType);
+		zoomMapEvent.setTransformationCenterLocation(center);
+		return zoomMapEvent;
+	}
+
+	/**
+	 * Gets the zoom (as floating zoom level) the map will have after tweening, or the current one without tweening.
+	 */
+	private float getTargetZoom() {
+		return getZoomFromScale(tweening ? scaleIntegrator.target : mapDisplay.innerScale);
 	}
 
 	/**
@@ -548,11 +602,19 @@ public class UnfoldingMap implements MapEventListener {
 	public void zoomToLevel(int level) {
 		float scale = getScaleFromZoom(level);
 		setInnerScale(scale);
+
+		ZoomMapEvent zoomMapEvent = createZoomMapEvent(ZoomMapEvent.ZOOM_TO_LEVEL, null);
+		zoomMapEvent.setZoomLevel(level);
+		notifyMapChanged(zoomMapEvent);
 	}
 
 	public void zoomTo(float zoom) {
 		float scale = getScaleFromZoom(zoom);
 		setInnerScale(scale);
+
+		ZoomMapEvent zoomMapEvent = createZoomMapEvent(ZoomMapEvent.ZOOM_TO, null);
+		zoomMapEvent.setZoom(zoom);
+		notifyMapChanged(zoomMapEvent);
 	}
 
 	/**
@@ -562,8 +624,17 @@ public class UnfoldingMap implements MapEventListener {
 	 *            The number of levels to zoom in or out.
 	 */
 	public void zoomLevel(int levelDelta) {
-		int newLevel = getZoomLevelFromScale(mapDisplay.innerScale) + levelDelta;
-		zoomToLevel(newLevel);
+		mapChangeDepth++;
+		try {
+			int newLevel = getZoomLevelFromScale(mapDisplay.innerScale) + levelDelta;
+			zoomToLevel(newLevel);
+		} finally {
+			mapChangeDepth--;
+		}
+
+		ZoomMapEvent zoomMapEvent = createZoomMapEvent(ZoomMapEvent.ZOOM_BY_LEVEL, null);
+		zoomMapEvent.setZoomLevelDelta(levelDelta);
+		notifyMapChanged(zoomMapEvent);
 	}
 
 	/**
@@ -598,6 +669,13 @@ public class UnfoldingMap implements MapEventListener {
 	 */
 	public void zoom(float scaleDelta) {
 		innerScale(scaleDelta);
+		notifyZoomBy(scaleDelta);
+	}
+
+	private void notifyZoomBy(float scaleDelta) {
+		ZoomMapEvent zoomMapEvent = createZoomMapEvent(ZoomMapEvent.ZOOM_BY, null);
+		zoomMapEvent.setZoomDelta(scaleDelta);
+		notifyMapChanged(zoomMapEvent);
 	}
 
 	/**
@@ -605,6 +683,7 @@ public class UnfoldingMap implements MapEventListener {
 	 */
 	public void zoomIn() {
 		innerScale(SCALE_DELTA_IN);
+		notifyZoomBy(SCALE_DELTA_IN);
 	}
 
 	/**
@@ -612,6 +691,7 @@ public class UnfoldingMap implements MapEventListener {
 	 */
 	public void zoomOut() {
 		innerScale(SCALE_DELTA_OUT);
+		notifyZoomBy(SCALE_DELTA_OUT);
 	}
 
 	/**
@@ -630,10 +710,24 @@ public class UnfoldingMap implements MapEventListener {
 	public void zoomAndPanTo(float x, float y, int level) {
 		// NB: Could not be deprecated as switching float/int parameters would be ambiguous!
 
-		// Works only when first zoom around pos, then pan to pos
-		mapDisplay.setInnerTransformationCenter(new PVector(x, y));
-		zoomToLevel(level);
-		panTo(x, y);
+		Location location = isNotifyingMapChanged() ? getLocation(x, y) : null;
+		mapChangeDepth++;
+		try {
+			// Works only when first zoom around pos, then pan to pos
+			mapDisplay.setInnerTransformationCenter(new PVector(x, y));
+			zoomToLevel(level);
+			panTo(x, y);
+		} finally {
+			mapChangeDepth--;
+		}
+
+		notifyZoomAndPan(level, location);
+	}
+
+	private void notifyZoomAndPan(int level, Location location) {
+		ZoomMapEvent zoomMapEvent = createZoomMapEvent(ZoomMapEvent.ZOOM_TO_LEVEL, location);
+		zoomMapEvent.setZoomLevel(level);
+		notifyMapChanged(zoomMapEvent);
 	}
 
 	/**
@@ -662,10 +756,18 @@ public class UnfoldingMap implements MapEventListener {
 	 *            ScreenPosition to zoom around and pan to.
 	 */
 	public void zoomAndPanTo(int level, ScreenPosition screenPosition) {
-		// Works only when first zoom around pos, then pan to pos
-		mapDisplay.setInnerTransformationCenter(new PVector(screenPosition.x, screenPosition.y));
-		zoomToLevel(level);
-		panTo(screenPosition.x, screenPosition.y);
+		Location location = isNotifyingMapChanged() ? getLocation(screenPosition) : null;
+		mapChangeDepth++;
+		try {
+			// Works only when first zoom around pos, then pan to pos
+			mapDisplay.setInnerTransformationCenter(new PVector(screenPosition.x, screenPosition.y));
+			zoomToLevel(level);
+			panTo(screenPosition.x, screenPosition.y);
+		} finally {
+			mapChangeDepth--;
+		}
+
+		notifyZoomAndPan(level, location);
 	}
 
 	/**
@@ -695,10 +797,17 @@ public class UnfoldingMap implements MapEventListener {
 	 */
 	public void zoomAndPanTo(int zoomLevel, Location location) {
 		// NB: Uses the exact (non-rounded) position, as any offset to the location is scaled up by zooming
-		ScreenPosition pos = mapDisplay.getScreenPositionFloat(location);
-		mapDisplay.setInnerTransformationCenter(new PVector(pos.x, pos.y));
-		zoomToLevel(zoomLevel);
-		panToAfterZoom(location);
+		mapChangeDepth++;
+		try {
+			ScreenPosition pos = mapDisplay.getScreenPositionFloat(location);
+			mapDisplay.setInnerTransformationCenter(new PVector(pos.x, pos.y));
+			zoomToLevel(zoomLevel);
+			panToAfterZoom(location);
+		} finally {
+			mapChangeDepth--;
+		}
+
+		notifyZoomAndPan(zoomLevel, location);
 	}
 
 	/**
@@ -744,8 +853,11 @@ public class UnfoldingMap implements MapEventListener {
 	 *            Y of the position to pan to, in screen coordinates.
 	 */
 	public void panTo(float x, float y) {
+		Location location = isNotifyingMapChanged() ? getLocation(x, y) : null;
 		float[] objectXY = mapDisplay.getObjectFromScreenPosition(x, y);
 		panObjectPositionToObjectCenter(objectXY[0], objectXY[1]);
+
+		notifyMapChanged(createPanMapEvent(PanMapEvent.PAN_TO, null, location));
 	}
 
 	/**
@@ -755,8 +867,11 @@ public class UnfoldingMap implements MapEventListener {
 	 *            the position to pan to.
 	 */
 	public void panTo(ScreenPosition screenPosition) {
+		Location location = isNotifyingMapChanged() ? getLocation(screenPosition) : null;
 		float[] objectXY = mapDisplay.getObjectFromScreenPosition(screenPosition.x, screenPosition.y);
 		panObjectPositionToObjectCenter(objectXY[0], objectXY[1]);
+
+		notifyMapChanged(createPanMapEvent(PanMapEvent.PAN_TO, null, location));
 	}
 
 	/**
@@ -769,12 +884,16 @@ public class UnfoldingMap implements MapEventListener {
 		float[] innerXY = mapDisplay.getInnerObjectFromLocation(location);
 		float[] objectXY = mapDisplay.getObjectFromInnerObjectPosition(innerXY[0], innerXY[1]);
 		panObjectPositionToObjectCenter(objectXY[0], objectXY[1]);
+
+		notifyMapChanged(createPanMapEvent(PanMapEvent.PAN_TO, null, location));
 	}
 
 	/**
 	 * Pans from point1 to point 2, given in screen coordinates.
 	 */
 	public void pan(float x1, float y1, float x2, float y2) {
+		PanMapEvent panMapEvent = isNotifyingMapChanged() ? createPanMapEvent(PanMapEvent.PAN_BY, getLocation(x1, y1),
+				getLocation(x2, y2)) : null;
 		float[] xy1 = mapDisplay.getObjectFromScreenPosition(x1, y1);
 		float[] xy2 = mapDisplay.getObjectFromScreenPosition(x2, y2);
 
@@ -782,6 +901,10 @@ public class UnfoldingMap implements MapEventListener {
 		float dy = xy2[1] - xy1[1];
 
 		addInnerOffset(dx, dy);
+
+		if (panMapEvent != null) {
+			notifyMapChanged(panMapEvent);
+		}
 	}
 
 	/**
@@ -793,6 +916,8 @@ public class UnfoldingMap implements MapEventListener {
 	 *            ScreenPosition to pan to.
 	 */
 	public void pan(ScreenPosition from, ScreenPosition to) {
+		PanMapEvent panMapEvent = isNotifyingMapChanged() ? createPanMapEvent(PanMapEvent.PAN_BY, getLocation(from),
+				getLocation(to)) : null;
 		float[] xy1 = mapDisplay.getObjectFromScreenPosition(from.x, from.y);
 		float[] xy2 = mapDisplay.getObjectFromScreenPosition(to.x, to.y);
 
@@ -800,6 +925,10 @@ public class UnfoldingMap implements MapEventListener {
 		float dy = xy2[1] - xy1[1];
 
 		addInnerOffset(dx, dy);
+
+		if (panMapEvent != null) {
+			notifyMapChanged(panMapEvent);
+		}
 	}
 
 	/**
@@ -818,6 +947,8 @@ public class UnfoldingMap implements MapEventListener {
 		float dy = xy2[1] - xy1[1];
 
 		addInnerOffset(dx, dy);
+
+		notifyMapChanged(createPanMapEvent(PanMapEvent.PAN_BY, fromLocation, toLocation));
 	}
 
 	/**
@@ -829,7 +960,18 @@ public class UnfoldingMap implements MapEventListener {
 	 *            Vertical distance in pixel.
 	 */
 	public void panBy(float dx, float dy) {
+		PanMapEvent panMapEvent = null;
+		if (isNotifyingMapChanged()) {
+			ScreenPosition center = mapDisplay.getScreenPositionFloat(getCenter());
+			panMapEvent = createPanMapEvent(PanMapEvent.PAN_BY, getLocation(center.x, center.y),
+					getLocation(center.x + dx, center.y + dy));
+		}
+
 		addInnerOffset(dx, dy);
+
+		if (panMapEvent != null) {
+			notifyMapChanged(panMapEvent);
+		}
 	}
 
 	/**
@@ -837,6 +979,7 @@ public class UnfoldingMap implements MapEventListener {
 	 */
 	public void panLeft() {
 		addInnerOffset(PAN_DEFAULT_DELTA, 0);
+		notifyMapChanged(createPanMapEvent(PanMapEvent.PAN_LEFT, null, null));
 	}
 
 	/**
@@ -844,6 +987,7 @@ public class UnfoldingMap implements MapEventListener {
 	 */
 	public void panRight() {
 		addInnerOffset(-PAN_DEFAULT_DELTA, 0);
+		notifyMapChanged(createPanMapEvent(PanMapEvent.PAN_RIGHT, null, null));
 	}
 
 	/**
@@ -851,6 +995,7 @@ public class UnfoldingMap implements MapEventListener {
 	 */
 	public void panUp() {
 		addInnerOffset(0, PAN_DEFAULT_DELTA);
+		notifyMapChanged(createPanMapEvent(PanMapEvent.PAN_UP, null, null));
 	}
 
 	/**
@@ -858,6 +1003,7 @@ public class UnfoldingMap implements MapEventListener {
 	 */
 	public void panDown() {
 		addInnerOffset(0, -PAN_DEFAULT_DELTA);
+		notifyMapChanged(createPanMapEvent(PanMapEvent.PAN_DOWN, null, null));
 	}
 
 	/**
@@ -933,10 +1079,19 @@ public class UnfoldingMap implements MapEventListener {
 		Location[] boundingBox = GeoUtils.getBoundingBox(locations);
 		List<Location> boundingBoxLocations = Arrays.asList(boundingBox);
 		Location centerLocation = GeoUtils.getEuclideanCentroid(boundingBoxLocations);
-		ScreenPosition pos = mapDisplay.getScreenPositionFloat(centerLocation);
-		mapDisplay.setInnerTransformationCenter(new PVector(pos.x, pos.y));
-		zoomToFit(boundingBox);
-		panToAfterZoom(centerLocation);
+		mapChangeDepth++;
+		try {
+			ScreenPosition pos = mapDisplay.getScreenPositionFloat(centerLocation);
+			mapDisplay.setInnerTransformationCenter(new PVector(pos.x, pos.y));
+			zoomToFit(boundingBox);
+			panToAfterZoom(centerLocation);
+		} finally {
+			mapChangeDepth--;
+		}
+
+		ZoomMapEvent zoomMapEvent = createZoomMapEvent(ZoomMapEvent.ZOOM_TO, centerLocation);
+		zoomMapEvent.setZoom(getTargetZoom());
+		notifyMapChanged(zoomMapEvent);
 	}
 
 	public void zoomToFit(List<Location> locations) {
@@ -949,6 +1104,10 @@ public class UnfoldingMap implements MapEventListener {
 		ScreenPosition sePos = mapDisplay.getScreenPositionFloat(boundingBox[1]);
 		float zoomScale = 0.9f / Math.max((sePos.x - nwPos.x) / getWidth(), (sePos.y - nwPos.y) / getHeight());
 		innerScale(zoomScale);
+
+		ZoomMapEvent zoomMapEvent = createZoomMapEvent(ZoomMapEvent.ZOOM_TO, null);
+		zoomMapEvent.setZoom(getTargetZoom());
+		notifyMapChanged(zoomMapEvent);
 	}
 
 	// MarkerManagement -----------------------------------------------
@@ -1281,6 +1440,17 @@ public class UnfoldingMap implements MapEventListener {
 		if (restrictedPanLocation == null && restrictedRectangularPanningTopLeftLocation == null) {
 			return;
 		}
+
+		// Corrects the map after a change, so the application is not notified again
+		mapChangeDepth++;
+		try {
+			restrictMapToAreaInternal();
+		} finally {
+			mapChangeDepth--;
+		}
+	}
+
+	private void restrictMapToAreaInternal() {
 
 		if (restrictedPanLocation != null) {
 			// circular

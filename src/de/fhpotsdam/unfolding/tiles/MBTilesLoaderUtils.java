@@ -28,6 +28,8 @@ public class MBTilesLoaderUtils {
 
 	public static final String SQLITE_JDBC_DRIVER = "org.sqlite.JDBC";
 
+	private static boolean missingDriverReported = false;
+
 	/**
 	 * Loads the tile for given parameters as image.
 	 * 
@@ -50,10 +52,57 @@ public class MBTilesLoaderUtils {
 			} else {
 				// System.err.println("No tile found for " + column + "," + row + " " + zoomLevel);
 			}
+		} catch (ClassNotFoundException e) {
+			reportMissingDriver();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return img;
+	}
+
+	private static synchronized void reportMissingDriver() {
+		if (!missingDriverReported) {
+			System.err.println("Could not load MBTiles: The SQLite JDBC driver (" + SQLITE_JDBC_DRIVER
+					+ ") was not found. Download sqlite-jdbc from https://github.com/xerial/sqlite-jdbc/releases"
+					+ " and put the jar file into the 'code' folder of your sketch.");
+			missingDriverReported = true;
+		}
+	}
+
+	/**
+	 * Loads the metadata of the MBTiles database, e.g. minzoom, maxzoom, center, and bounds.
+	 * 
+	 * @param jdbcConnectionString
+	 *            The path to the MBTiles database.
+	 * @return The metadata as name-value pairs, or an empty map if it could not be loaded.
+	 */
+	public static Map<String, String> getMetadata(String jdbcConnectionString) {
+		Map<String, String> metadata = new HashMap<String, String>();
+		try {
+			Connection conn = getConnection(jdbcConnectionString);
+			try (Statement stat = conn.createStatement();
+					ResultSet rs = stat.executeQuery("SELECT name, value FROM metadata;")) {
+				while (rs.next()) {
+					metadata.put(rs.getString("name"), rs.getString("value"));
+				}
+			}
+		} catch (ClassNotFoundException e) {
+			reportMissingDriver();
+		} catch (SQLException e) {
+			System.err.println("Could not read metadata of MBTiles " + jdbcConnectionString + ": " + e.getMessage());
+		}
+		return metadata;
+	}
+
+	private static synchronized Connection getConnection(String jdbcConnectionString) throws ClassNotFoundException,
+			SQLException {
+		Class.forName(SQLITE_JDBC_DRIVER);
+		Connection conn = connectionsMap.get(jdbcConnectionString);
+		if (conn == null) {
+			conn = DriverManager.getConnection(jdbcConnectionString);
+			connectionsMap.put(jdbcConnectionString, conn);
+		}
+		return conn;
 	}
 
 	protected static Map<String, Connection> connectionsMap = new HashMap<String, Connection>();
@@ -71,42 +120,22 @@ public class MBTilesLoaderUtils {
 	 */
 	protected static byte[] getMBTileData(int column, int row, int zoomLevel, String jdbcConnectionString)
 			throws Exception {
-		Class.forName(SQLITE_JDBC_DRIVER);
-
-		Connection conn = null;
+		Connection conn = getConnection(jdbcConnectionString);
 		byte[] tileData = null;
 
-		try {
-			conn = connectionsMap.get(jdbcConnectionString);
-			if (conn == null) {
-				conn = DriverManager.getConnection(jdbcConnectionString);
-				connectionsMap.put(jdbcConnectionString, conn);
-			}
-
-			Statement stat = conn.createStatement();
-			PreparedStatement prep = conn
-					.prepareStatement("SELECT * FROM tiles WHERE tile_column = ? AND tile_row = ? AND zoom_level = ?;");
+		try (PreparedStatement prep = conn
+				.prepareStatement("SELECT tile_data FROM tiles WHERE tile_column = ? AND tile_row = ? AND zoom_level = ?;")) {
 			prep.setInt(1, column);
 			prep.setInt(2, row);
 			prep.setInt(3, zoomLevel);
 
-			ResultSet rs = prep.executeQuery();
-
-			while (rs.next()) {
-				tileData = rs.getBytes("tile_data");
+			try (ResultSet rs = prep.executeQuery()) {
+				while (rs.next()) {
+					tileData = rs.getBytes("tile_data");
+				}
 			}
-			rs.close();
-			stat.close();
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
-		} finally {
-//			try {
-//				if (conn != null)
-//					conn.close();
-//			} catch (SQLException e) {
-//				// connection close failed.
-//				System.err.println(e);
-//			}
 		}
 		return tileData;
 	}

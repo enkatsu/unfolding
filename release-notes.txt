@@ -1,6 +1,28 @@
 RELEASE NOTES
 
 
+0.9.96 - 4 October 2026
+-----------------------------
+
+Bug fixes
+- Fixed maps with the default JAVA2D renderer, which ignored the map's position and size, hid anything drawn
+  before or after the map, and did not show markers. #12
+- Maps are no longer moved by the sketch's imageMode, e.g. imageMode(CENTER).
+- Tiles that could not be loaded, e.g. due to a timeout, are loaded again after a delay instead of staying blank.
+  See AbstractMapDisplay.maxTileLoadAttempts and tileRetryDelayMillis. #14
+- Fixed MBTiles with high zoom levels only showing a black screen. #16
+- Fixed a resource leak when loading MBTiles.
+
+Features
+- MBTilesMapProvider uses the MBTiles metadata (minzoom, maxzoom, center, bounds) to restrict the zoom range of
+  maps, and to show the area with tiles initially.
+- Added AbstractMapProvider.minZoomLevel(), defaultLocation() and defaultZoomLevel().
+
+Other
+- Replaced log4j 1.2.15 with reload4j 1.2.26, a drop-in replacement with the known vulnerabilities fixed.
+- A missing SQLite JDBC driver for MBTiles is reported once, with a download link.
+
+
 0.9.95 - 3 October 2026
 -----------------------------
 
